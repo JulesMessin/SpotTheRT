@@ -1,0 +1,36 @@
+Routeur
+Switch
+Modem
+Point d'accès Wi-Fi
+Pare-feu
+Câble Ethernet
+Câble Fibre Optique
+Câble Coaxial
+Serveur
+Baie de brassage
+Panneau de brassage
+Câble de brassage
+Onduleur
+Concentrateur
+Répéteur
+Antenne Relais
+Centrale Téléphonique
+FTTH
+Satellite de Télécommunication
+Antenne Parabolique
+Téléphone IP
+Box Internet
+Câble Sous-Marin
+Multiplexeur
+Testeur de Câble
+Analyseur de Spectre
+Oscilloscope
+Polisseuse de Fibre
+Soupleuse de Fibre
+Sonde de Diagnostic
+Carte Réseau
+Clé 4G/5G
+Smartphone
+Câble de Console
+Adaptateur CPL
+Capteur IoT
