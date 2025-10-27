@@ -34,7 +34,7 @@ class SpotTheRT:
         pass
 
     def create_lobby_request(lobby_name_input, player_pseudo_input):
-        if _is_in_list_game(lobby_name_input):
+        if self._is_in_list_game(lobby_name_input):
             new_game_id = self._get_nb_game() + 1
             new_game = Game(lobby_name=lobby_name_input, game_id=new_game_id)
             self._set_nb_game(new_game_id)
