@@ -1,102 +1,126 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QAction, QMenuBar, QToolBar, QVBoxLayout, QWidget, QLabel, QLineEdit, QInputDialog, QMessageBox
-from PyQt5.QtGui import QIcon
+import socket
+from PyQt5.QtWidgets import (
+    QApplication, QMainWindow, QTextEdit, QVBoxLayout, QWidget,
+    QLineEdit, QPushButton, QLabel, QMessageBox
+)
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
 
-class InterfaceClientMail(QMainWindow):
+
+# --- Thread de réception pour ne pas bloquer l'interface ---
+class ReceptionThread(QThread):
+    message_recu = pyqtSignal(str)
+
+    def __init__(self, socket_client):
+        super().__init__()
+        self.socket_client = socket_client
+        self.en_cours = True
+
+    def run(self):
+        while self.en_cours:
+            try:
+                data = self.socket_client.recv(1024)
+                if data:
+                    message = data.decode('utf-8')
+                    self.message_recu.emit(message)
+                else:
+                    break
+            except:
+                break
+
+    def stop(self):
+        self.en_cours = False
+        self.socket_client.close()
+
+
+# --- Interface principale ---
+class InterfaceClientSocket(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.socket_client = None
+        self.thread_reception = None
         self.initialiserUI()
 
     def initialiserUI(self):
-        self.setWindowTitle('Client Mail')
-        self.setGeometry(100, 100, 800, 600)
-        self.widget_central = QWidget()
-        self.setCentralWidget(self.widget_central)
-        disposition = QVBoxLayout(self.widget_central)
+        self.setWindowTitle("Client TCP - PyQt5")
+        self.setGeometry(200, 200, 600, 400)
 
-        self.champ_destinataire = QLineEdit(self)
-        self.champ_destinataire.setPlaceholderText('Pour...')
-        disposition.addWidget(self.champ_destinataire)
+        widget_central = QWidget()
+        self.setCentralWidget(widget_central)
+        layout = QVBoxLayout(widget_central)
 
-        self.champ_sujet = QLineEdit(self)
-        self.champ_sujet.setPlaceholderText('Sujet...')
-        disposition.addWidget(self.champ_sujet)
+        self.label_statut = QLabel("Statut : non connecté")
+        layout.addWidget(self.label_statut)
 
-        self.zone_texte = QTextEdit(self)
-        disposition.addWidget(self.zone_texte)
+        self.champ_ip = QLineEdit("127.0.0.1")
+        self.champ_ip.setPlaceholderText("Adresse IP du serveur")
+        layout.addWidget(self.champ_ip)
 
-        self.creer_menus()
-        self.creer_barre_outils()
+        self.champ_port = QLineEdit("55300")
+        self.champ_port.setPlaceholderText("Port du serveur")
+        layout.addWidget(self.champ_port)
 
-    def creer_menus(self):
-        barre_menu = self.menuBar()
-        
-        menu_fichier = barre_menu.addMenu('Fichier')
+        self.zone_texte = QTextEdit()
+        self.zone_texte.setPlaceholderText("Entrez votre message ici...")
+        layout.addWidget(self.zone_texte)
 
-        action_nouveau = QAction(QIcon('/usr/share/icons/gnome/32x32/actions/mail-message-new.png'), 'Nouveau', self)
-        menu_fichier.addAction(action_nouveau)
-        
-        action_envoyer = QAction(QIcon('/usr/share/icons/gnome/32x32/actions/mail-forward.png'), 'Envoyer', self)
-        action_envoyer.triggered.connect(self.envoyer)
-        menu_fichier.addAction(action_envoyer)
-        
-        action_effacer = QAction(QIcon('/usr/share/icons/gnome/32x32/actions/editclear.png'), 'Effacer', self)
-        action_effacer.triggered.connect(self.effacer)
-        menu_fichier.addAction(action_effacer)
-        
-        action_quitter = QAction(QIcon('/usr/share/icons/gnome/32x32/actions/system-log-out.png'), 'Quitter', self)
-        action_quitter.triggered.connect(self.close)
-        menu_fichier.addAction(action_quitter)
-        
-        menu_parametres = barre_menu.addMenu('Paramètres')
-        action_serveur_smtp = QAction(QIcon('/usr/share/icons/gnome/32x32/actions/address-book-new.png'),'ServeurSMTP...', self)
-        action_serveur_smtp.triggered.connect(self.definir_serveur_smtp)
-        menu_parametres.addAction(action_serveur_smtp)
-        
-        action_expediteur = QAction(QIcon('/usr/share/icons/gnome/32x32/actions/mail-forward.png'),'Expéditeur...', self)
-        action_expediteur.triggered.connect(self.definir_expediteur)
-        menu_parametres.addAction(action_expediteur)
-        
-        action_signature = QAction(QIcon('/usr/share/icons/gnome/32x32/actions/format-text-direction-ltr.png'),'Signature...', self)
-        action_signature.triggered.connect(self.definir_signature)
-        menu_parametres.addAction(action_signature)
-        menu_aide = barre_menu.addMenu('Aide')
-        
-        action_a_propos = QAction(QIcon('/usr/share/icons/gnome/32x32/actions/help-faq.png'),'A propos', self)
-        action_a_propos.triggered.connect(self.afficher_a_propos)
-        menu_aide.addAction(action_a_propos)
+        self.bouton_connecter = QPushButton("Se connecter")
+        self.bouton_connecter.clicked.connect(self.connecter_serveur)
+        layout.addWidget(self.bouton_connecter)
 
-    def creer_barre_outils(self):
-        barre_outils = QToolBar('Outils')
-        action_envoyer = QAction(QIcon('/usr/share/icons/gnome/32x32/actions/mail-send.png'), 'Envoyer', self)
-        action_envoyer.triggered.connect(self.envoyer)
-        action_effacer = QAction(QIcon('/usr/share/icons/gnome/32x32/actions/editclear.png'), 'Effacer', self)
-        action_effacer.triggered.connect(self.effacer)
-        barre_outils.addAction(action_envoyer)
-        barre_outils.addAction(action_effacer)
-        self.addToolBar(barre_outils)
+        self.bouton_envoyer = QPushButton("Envoyer le message")
+        self.bouton_envoyer.clicked.connect(self.envoyer_message)
+        self.bouton_envoyer.setEnabled(False)
+        layout.addWidget(self.bouton_envoyer)
 
-    def envoyer(self):
-        destinataire = self.champ_destinataire.text()
-        sujet = self.champ_sujet.text()
-        contenu = self.zone_texte.toPlainText()
-        print(f"Destinataire: {destinataire}")
-        print(f"Sujet: {sujet}")
-        print(f"Contenu: {contenu}")
+        self.zone_reponse = QTextEdit()
+        self.zone_reponse.setReadOnly(True)
+        layout.addWidget(self.zone_reponse)
 
-    def effacer(self):
-        self.champ_destinataire.clear()
-        self.champ_sujet.clear()
-        self.zone_texte.clear()
+    # --- Connexion au serveur ---
+    def connecter_serveur(self):
+        ip = self.champ_ip.text()
+        port = int(self.champ_port.text())
 
-    def definir_serveur(self):
-        serveur_smtp = QInputDialog.getText(self, 'Serveur SMTP', 'Entrez l\'adresse du serveur SMTP:')
-        if serveur_smtp:
-            print(f"Serveur SMTP défini: {serveur_smtp}")
+        try:
+            self.socket_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket_client.connect((ip, port))
+            self.label_statut.setText(f"Connecté à {ip}:{port}")
+            self.bouton_envoyer.setEnabled(True)
+
+            # Démarrage du thread de réception
+            self.thread_reception = ReceptionThread(self.socket_client)
+            self.thread_reception.message_recu.connect(self.afficher_message)
+            self.thread_reception.start()
+
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Connexion échouée : {e}")
+            self.label_statut.setText("Statut : erreur de connexion")
+
+    # --- Envoi du message ---
+    def envoyer_message(self):
+        message = self.zone_texte.toPlainText().strip()
+        if not message:
+            return
+
+        try:
+            self.socket_client.send(message.encode('utf-8'))
+            self.zone_texte.clear()
+        except Exception as e:
+            QMessageBox.critical(self, "Erreur", f"Échec d'envoi : {e}")
+
+    # --- Réception du message du serveur ---
+    def afficher_message(self, message):
+        self.zone_reponse.append(f"Serveur : {message}")
+
+    def closeEvent(self, event):
+        if self.thread_reception:
+            self.thread_reception.stop()
+        event.accept()
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    fenetre = InterfaceClientMail()
+    fenetre = InterfaceClientSocket()
     fenetre.show()
     sys.exit(app.exec_())
-

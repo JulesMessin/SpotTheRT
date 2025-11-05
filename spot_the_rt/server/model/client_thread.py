@@ -19,7 +19,7 @@ class ClientThread(Thread):
 
                 self.controller.handle_message(self.client_address, message)
         except Exception as e:
-            print("Erreur client {self.client_address}: {e}")
+            print(f"Erreur client {self.client_address}: {e}")
         finally:
             self.client_socket.close()
             self.controller.client_disconnected(self.client_address)

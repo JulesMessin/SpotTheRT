@@ -13,7 +13,7 @@ class ServerController:
             self.clients.append(thread)
             thread.start()
             self.view.display_connection(client_address)
-"""
+
     def handle_message(self, client_address, message):
         self.view.display_message(client_address, message)
 
@@ -26,4 +26,3 @@ class ServerController:
     def client_disconnected(self, client_address):
         self.clients = [t for t in self.clients if t.client_address != client_address]
         self.view.display_disconnection(client_address)
-"""
