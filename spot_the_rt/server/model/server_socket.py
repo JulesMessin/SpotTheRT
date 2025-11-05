@@ -1,6 +1,6 @@
 import socket
 
-def create_server_socket():
+def create_server_socket(host,port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
     server_socket.bind((host, port))

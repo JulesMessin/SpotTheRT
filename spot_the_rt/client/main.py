@@ -1,9 +1,12 @@
+from view.interface_client import InterfaceClient
 import socket
+import sys
 
 def main():
+
     socket_client_TCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     adresseIP_serveur = "localhost"
-    port_serveur = 55300
+    port_serveur = 55305
 
     socket_client_TCP.connect((adresseIP_serveur, port_serveur))
 
@@ -14,6 +17,11 @@ def main():
     print("Réponse server :", response.decode('utf-8'))
 
     socket_client_TCP.close()
+
+    app = QApplication(sys.argv)
+    fenetre = InterfaceClient()
+    fenetre.show()
+    sys.exit(app.exec_())
 
 
 if __name__ == "__main__":
