@@ -50,9 +50,9 @@ class SpotTheRT:
         if self._is_in_list_game(lobby_name_input):
             game_id = self._get_list_game().index(lobby_name_input)
             selected_game = self._get_list_game()[game_id]
-            for player_id in range(1, selected_game._get_nb_connected_player + 1):
-                requested_common_card = selected_game.__game_deck._get_card(0)
-                requested_player_card = selected_game.__game_deck._get_card(player_id)
+            for player_id in range(1, selected_game._get_nb_connected_player):
+                requested_common_card = selected_game._get_game_deck()._get_card(0)
+                requested_player_card = selected_game._get_game_deck()._get_card(player_id)
                 """ ENVOYER '3'  (lancer une partie reussi) et LES CARTES AU JOUEUR SELON 'player_id' """
         else:
             """ ENVOYER '8' (requête lancer une partie echouée) AU DEMANDEUR """
@@ -61,8 +61,19 @@ class SpotTheRT:
         if self._is_in_list_game(lobby_name_input):
             game_id = self._get_list_game().index(lobby_name_input)
             selected_game = self._get_list_game()[game_id]
-            selected_game._get_connected_player()[0]
-        
+            player_id = -1
+            correct = False
+            while not correct and player_id <= selected_game._get_nb_connected_player():
+                player_id += 1
+                selected_player = selected_game._get_connected_player()[player_id]._get_name_player()
+                if player_pseudo_input == selected_player:
+                    correct = True
+            if correct:
+                selected_game.remove_player_to_lobby(selected_player)
+                """ ENVOYER '4' (requête quitter une partie reussit) AU DEMANDEUR """            
+        else:
+            """ ENVOYER '9' (requête quitter une partie echouée) AU DEMANDEUR """            
+
     def is_symbol_correct_request():
         pass
 

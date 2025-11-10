@@ -18,6 +18,9 @@ class Game():
     def _add_connected_player(self, new_connected_player):
         self.__connected_player.append(new_connected_player)
 
+    def _del_connected_player(self, connected_player_input):
+        self.__connected_player.remove(connected_player_input)
+
     def _set_nb_connected_player(self, new_nb_connected_player):
         self.__nb_connected_player = new_nb_connected_player
     
@@ -33,8 +36,14 @@ class Game():
     def _get_lobby_name(self):
         return self.__lobby_name
 
+    def _get_game_deck(self):
+        return self.__game_deck
+
     def add_player_to_lobby(self, new_player_name, new_player_status):
         new_player_card_id = self._get_nb_connected_player() + 1
         new_player = Player(new_player_name, new_player_status, new_player_card_id)
         self._set_nb_connected_player(new_player_card_id)
         self._add_connected_player(new_player)
+
+    def remove_player_to_lobby(self, player_name_input):
+        self._del_connected_player(player_name_input)
