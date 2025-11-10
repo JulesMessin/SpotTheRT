@@ -65,7 +65,7 @@ class ClientView(QMainWindow):
                 self.message_input.clear()
             except Exception as e:
                 QMessageBox.critical(self, "Erreur", f"Échec d'envoi : {e}")
-
+            
     def display_message(self, message):
         self.response_area.append(f"Serveur : {message}")
 
