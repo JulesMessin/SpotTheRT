@@ -19,9 +19,28 @@ class ServerController:
 
         for thread in self.clients:
             if thread.client_address == client_address:
-                response = message[::-1].encode('utf-8')
-                thread.client_socket.send(response)
+                new_message = "void"
+                if message == "clement":
+                    new_message = "celine"
+
+                if message == "nolann":
+                    new_message = "skincare"
+
+                if message == "bastien":
+                    new_message = "bk"
+
+                if message == "jules":
+                    new_message = "seigneur de moulède alias le grand seigneur"
+
+
+
+
+
+
+                new_message = new_message.encode('utf-8')
+                thread.client_socket.send(new_message)
                 break
+
 
     def client_disconnected(self, client_address):
         self.clients = [t for t in self.clients if t.client_address != client_address]

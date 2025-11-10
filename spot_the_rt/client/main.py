@@ -14,7 +14,7 @@ def main():
     socket_client_TCP.send(message.encode('utf-8'))
 
     response = socket_client_TCP.recv(1024)
-    print("Réponse server :", response.decode('utf-8'))
+    print("Réponse server : test:", response.decode('utf-8'))
 
     socket_client_TCP.close()
 
