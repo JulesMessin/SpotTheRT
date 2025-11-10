@@ -1,0 +1,23 @@
+"""
+--- format des requetes clientes : 
+demande de creation de game : <1, nom lobby, pseudo>
+demande de join une game : <2, nom lobby, pseudo>
+demande de lancement de game : <3, nom lobby>
+demande de quitter le lobby : <4, pseudo, nom lobby>
+demande de verif symbole : <4, pseudo, nom lobby, symbole>
+demande de quitter la game : <5, pseudo, nom lobby>
+
+
+--- format des requetes serveur : 
+validation creation de game : 1
+validation join une game : 2
+validation lancement de game : 3
+validation quitter le lobby : 4
+validation verif symbole : 5
+
+echecs creation de game : 6
+echecs join une game : 7
+echecs lancement de game : 8
+echecs quitter le lobby : 9
+echecs verif symbole : 10
+"""
