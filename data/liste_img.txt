@@ -20,7 +20,7 @@ manette
 github
 robot
 casque
-elecrique
+electrique
 
 windows
 linux
