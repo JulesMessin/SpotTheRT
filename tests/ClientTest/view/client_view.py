@@ -25,9 +25,13 @@ class ClientView(QMainWindow):
         self.ip_field.setPlaceholderText("Adresse IP du serveur")
         layout.addWidget(self.ip_field)
 
-        self.port_field = QLineEdit("55300")
+        self.port_field = QLineEdit("55305")
         self.port_field.setPlaceholderText("Port du serveur")
         layout.addWidget(self.port_field)
+
+        self.username_field = QLineEdit("")
+        self.username_field.setPlaceholderText("Username")
+        layout.addWidget(self.username_field)
 
         self.message_input = QTextEdit()
         self.message_input.setPlaceholderText("Entrez votre message ici...")
@@ -53,8 +57,9 @@ class ClientView(QMainWindow):
     def on_connect(self):
         ip = self.ip_field.text()
         port = int(self.port_field.text())
+        username = self.username_field.text()
         try:
-            self.controller.connect_to_server(ip, port, self.display_message, self.update_status)
+            self.controller.connect_to_server(ip, port, self.display_message, self.update_status, username)
             self.send_button.setEnabled(True)
         except Exception as e:
             QMessageBox.critical(self, "Erreur", f"Connexion échouée : {e}")
@@ -67,15 +72,23 @@ class ClientView(QMainWindow):
                 self.message_input.clear()
             except Exception as e:
                 QMessageBox.critical(self, "Erreur", f"Échec d'envoi : {e}")
+    
+    def username_send(self):
+        message = self.username_field.toPlainText().strip()
+        if message:
+            try:
+                self.controller.send_message(message)
+            except Exception as e:
+                QMessageBox.critical(self, "Erreur", f"Échec d'envoi : {e}")
             
     def display_message(self, message):
 
         if message.lower() == "setbackground red":
             self.response_area.setStyleSheet("background-color: red;")
         if message.lower() == "setbackground blue":
-            self.response_area.setStyleSheet("background-color: blue;")
+            self.response_area.setStyleSheet("background-color: red;")
 
-        self.response_area.append(f"Serveur : {message}")
+        self.response_area.append(f"{message}")
 
 
     def update_status(self, status):

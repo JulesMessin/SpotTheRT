@@ -31,12 +31,14 @@ class ClientController:
         self.model = model
         self.receive_thread = None
 
-    def connect_to_server(self, ip, port, message_callback, status_callback):
+    def connect_to_server(self, ip, port, message_callback, status_callback, username):
         try:
             self.model.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.model.client_socket.connect((ip, port))
+            self.model.client_socket.send(username.encode("utf-8"))
             self.model.connected = True
-            status_callback(f"Connecté à {ip}:{port}")
+            
+            status_callback(f"Connecté à {ip}:{port} en tant que {username}")
 
             self.receive_thread = ReceiveThread(self.model.client_socket)
             self.receive_thread.message_received.connect(message_callback)
