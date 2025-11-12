@@ -4,16 +4,17 @@ demande de creation de game : <1, nom lobby, pseudo>
 demande de join une game : <2, nom lobby, pseudo>
 demande de lancement de game : <3, nom lobby>
 demande de quitter le lobby : <4, pseudo, nom lobby>
-demande de verif symbole : <4, pseudo, nom lobby, symbole>
-demande de quitter la game : <5, pseudo, nom lobby>
+demande de verif symbole : <5, pseudo, nom lobby, symbole>
 
 
 --- format des requetes serveur : 
-validation creation de game : 1
-validation join une game : 2
-validation lancement de game : 3
-validation quitter le lobby : 4
-validation verif symbole : 5
+validation creation de game : <1>
+validation join une game : <2>
+validation lancement de game : <3>
+validation quitter le lobby : <4>
+verif self symbole bon : <50, nouvelle carte commune, nouvelle carte joueur> 
+verif self symbole mauvais : <51>
+verif symbole adversaire bon : <52, nouvelle carte commune>
 
 echecs creation de game : 6
 echecs join une game : 7
