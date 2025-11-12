@@ -34,7 +34,7 @@ class ServerController:
                 try:
                     color_index = parts.index("-setbackground") + 1
                     color = parts[color_index]
-                    new_message = f"setbackground {color}"
+                    new_message = f"void -setbackground {color}"
                 except IndexError:
                     new_message = "Erreur : couleur manquante"
 

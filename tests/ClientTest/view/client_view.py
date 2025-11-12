@@ -82,13 +82,21 @@ class ClientView(QMainWindow):
                 QMessageBox.critical(self, "Erreur", f"Échec d'envoi : {e}")
             
     def display_message(self, message):
+        if message.startswith("void"):
+            parts = message.split()
+            if len(parts) == 0:
+                return
 
-        if message.lower() == "setbackground red":
-            self.response_area.setStyleSheet("background-color: red;")
-        if message.lower() == "setbackground blue":
-            self.response_area.setStyleSheet("background-color: red;")
-
-        self.response_area.append(f"{message}")
+            if "-setbackground" in parts:
+                try:
+                    color_index = parts.index("-setbackground") + 1
+                    color = parts[color_index]
+                    self.response_area.setStyleSheet(f"background-color: {color};")
+                    new_message = color
+                except IndexError:
+                    new_message = "Erreur : couleur manquante"
+        else:
+            self.response_area.append(f"{message}")
 
 
     def update_status(self, status):
