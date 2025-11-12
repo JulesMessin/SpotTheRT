@@ -48,61 +48,65 @@ class SpotTheRT:
             return False
 
     def create_lobby_request(self, lobby_name_input:str, player_pseudo_input:str):
-        if not self._is_in_list_game(lobby_name_input):
+        if not self._is_in_list_game(lobby_name_input=lobby_name_input):
             new_game_id = self._get_nb_game() + 1
             new_game = Game(lobby_name=lobby_name_input, game_id=new_game_id)
-            self._set_nb_game(new_game_id)
-            self._add_game(new_game)
+            self._set_nb_game(new_nb_game=new_game_id)
+            self._add_game(new_game_input=new_game)
             new_game.add_player_to_lobby(new_player_name=player_pseudo_input, new_player_status=True)
+            print(" ENVOYER '1' (requête créer un lobby reussit) AU DEMANDEUR ")
             """ ENVOYER '1' (requête créer un lobby reussit) AU DEMANDEUR """
         else:
+            print("ENVOYER '6' (requête rejoindre un lobby echouée) AU DEMANDEUR")
             """ ENVOYER '6' (requête rejoindre un lobby echouée) AU DEMANDEUR """
 
-    def join_lobby_request(self, lobby_name_input, player_pseudo_input):
-        if self._is_in_list_game(lobby_name_input):
+    def join_lobby_request(self, lobby_name_input:str, player_pseudo_input:str):
+        if self._is_in_list_game(lobby_name_input=lobby_name_input):
             game_id = self._get_list_game().index(lobby_name_input) + 1
-            self._get_list_game()[game_id]._add_player_to_lobby(new_player_name=player_pseudo_input, new_player_status=False)
+            if not self._is_player_existing(player_name_input=player_pseudo_input):
+                self._get_list_game()[game_id]._add_player_to_lobby(new_player_name=player_pseudo_input, new_player_status=False)
+            print("ENVOYER '2' (requête rejoindre un lobby reussit) AU DEMANDEUR")
             """ ENVOYER '2' (requête rejoindre un lobby reussit) AU DEMANDEUR """
         else:
+            print("ENVOYER '7' (requête rejoindre un lobby echouée) AU DEMANDEUR")
             """ ENVOYER '7' (requête rejoindre un lobby echouée) AU DEMANDEUR """
 
-    def launch_game_request(self, lobby_name_input):
-        if self._is_in_list_game(lobby_name_input):
+    def launch_game_request(self, lobby_name_input:str):
+        if self._is_in_list_game(lobby_name_input=lobby_name_input):
             game_id = self._get_list_game().index(lobby_name_input)
             selected_game = self._get_list_game()[game_id]
             for player_id in range(1, selected_game._get_nb_connected_player):
-                requested_common_card = selected_game._get_game_deck()._get_card(0)
-                requested_player_card = selected_game._get_game_deck()._get_card(player_id)
+                requested_common_card = selected_game._get_game_deck()._get_card(id_card=0)
+                requested_player_card = selected_game._get_game_deck()._get_card(id_card=player_id)
+                print("ENVOYER '3'  (lancer une partie reussi) et LES CARTES AU JOUEUR SELON 'player_id'")
                 """ ENVOYER '3'  (lancer une partie reussi) et LES CARTES AU JOUEUR SELON 'player_id' """
         else:
+            print("ENVOYER '8' (requête lancer une partie echouée) AU DEMANDEUR")
             """ ENVOYER '8' (requête lancer une partie echouée) AU DEMANDEUR """
 
-    def quit_game_request(self, player_pseudo_input, lobby_name_input):
-        if self._is_in_list_game(lobby_name_input):
+    def quit_game_request(self, player_pseudo_input:str, lobby_name_input:str):
+        if self._is_in_list_game(lobby_name_input=lobby_name_input):
             game_id = self._get_list_game().index(lobby_name_input)
             selected_game = self._get_list_game()[game_id]
-            if self._is_player_existing(player_pseudo_input):
-                selected_game.remove_player_to_lobby(selected_player)
+            if self._is_player_existing(player_name_input=player_pseudo_input):
+                selected_game.remove_player_to_lobby(player_name_input=selected_player)
+                print("ENVOYER '4' (requête quitter une partie reussit) AU DEMANDEUR")
                 """ ENVOYER '4' (requête quitter une partie reussit) AU DEMANDEUR """            
         else:
+            print("ENVOYER '9' (requête quitter une partie echouée) AU DEMANDEUR")
             """ ENVOYER '9' (requête quitter une partie echouée) AU DEMANDEUR """            
 
-    def is_symbol_correct_request(self, player_pseudo_input, lobby_name_input, symbol_input):
-        if self._is_in_list_game(lobby_name_input):
+    def is_symbol_correct_request(self, player_pseudo_input:str, lobby_name_input:str, symbol_input:str):
+        if self._is_in_list_game(lobby_name_input=lobby_name_input):
             game_id = self._get_list_game().index(lobby_name_input)
             selected_game = self._get_list_game()[game_id]
             selected_common_card = selected_game._get_game_deck()._get_card(0)
             try:
                 selected_symbol = selected_common_card.index(symbol_input)
+                print("ENVOYER '50' (requête verif self symbole bon) AU DEMANDEUR")
+                print("ENVOYER '52' (requête verif symbole adversaire bon) AUX AUTRES")
                 """ ENVOYER '50' (requête verif self symbole bon) AU DEMANDEUR """
                 """ ENVOYER '52' (requête verif symbole adversaire bon) AUX AUTRES """
             except ValueError:
+                print("ENVOYER '51' (requête verif self symbole mauvais) AU DEMANDEUR")
                 """ ENVOYER '51' (requête verif self symbole mauvais) AU DEMANDEUR """
-                pass
-
-def main():
-    running_app = SpotTheRT()
-
-
-if __name__=='__main__':
-    main()
