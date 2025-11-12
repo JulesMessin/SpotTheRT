@@ -24,7 +24,7 @@ class SpotTheRT:
     def _is_in_list_game(self, lobby_name_input:str):
         id_game = -1
         correct = False
-        while not correct and id_game <= len(self._get_nb_game()):
+        while not correct and id_game <= self._get_nb_game():
             id_game += 1
             selected_game_name = self._get_list_game()[id_game]._get_lobby_name()
             if lobby_name_input == selected_game_name:
