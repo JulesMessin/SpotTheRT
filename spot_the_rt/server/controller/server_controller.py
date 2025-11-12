@@ -16,32 +16,46 @@ class ServerController:
 
     def handle_message(self, client_address, message):
         self.view.display_message(client_address, message)
+        new_message = ""
+        # commande
+        if message.startswith("void"):
+            parts = message.split()
+            if len(parts) == 0:
+                return
 
-        if message == "all":
-            for thread in self.clients:
-                new_message = "message envoyé a tous les clients"
-                new_message = new_message.encode('utf-8')
-                thread.client_socket.send(new_message)
-        else :
+            sender = parts[0]
+
+                # --- Commande -all ---
+            if "-setbackground" in parts:
+                try:
+                    color_index = parts.index("-setbackground") + 1
+                    color = parts[color_index]
+                    new_message = f"setbackground {color}"
+                except IndexError:
+                    new_message = "Erreur : couleur manquante"
+
+
+            if "-all" in parts:
+                for thread in self.clients:
+                    thread.client_socket.send(new_message.encode("utf-8"))
+                return
+            else:
+                for thread in self.clients:
+                        if thread.client_address == client_address:
+                            new_message = new_message.encode('utf-8')
+                            thread.client_socket.send(new_message)
+                            break
+
+        # message
+        else:
+            new_message = "Voici ton message :"
             for thread in self.clients:
                 if thread.client_address == client_address:
-                    new_message = "void"
-                    if message == "clement":
-                        new_message = "celine"
-
-                    if message == "nolann":
-                        new_message = "skincare"
-
-                    if message == "bastien":
-                        new_message = "bk"
-
-                    if message == "jules":
-                        new_message = "seigneur de moulède alias le grand seigneur"
-
                     new_message = new_message.encode('utf-8')
                     thread.client_socket.send(new_message)
                     break
-        
+
+        self.view.display_message(client_address, new_message)
 
 
     def client_disconnected(self, client_address):

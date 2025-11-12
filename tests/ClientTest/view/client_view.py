@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (
     QLineEdit, QTextEdit, QPushButton, QMessageBox
 )
 
+
 class ClientView(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -43,6 +44,7 @@ class ClientView(QMainWindow):
         self.response_area.setReadOnly(True)
         layout.addWidget(self.response_area)
 
+            
     def set_controller(self, controller):
         self.controller = controller
         self.connect_button.clicked.connect(self.on_connect)
@@ -67,7 +69,14 @@ class ClientView(QMainWindow):
                 QMessageBox.critical(self, "Erreur", f"Échec d'envoi : {e}")
             
     def display_message(self, message):
+
+        if message.lower() == "setbackground red":
+            self.response_area.setStyleSheet("background-color: red;")
+        if message.lower() == "setbackground blue":
+            self.response_area.setStyleSheet("background-color: blue;")
+
         self.response_area.append(f"Serveur : {message}")
+
 
     def update_status(self, status):
         self.status_label.setText(status)
