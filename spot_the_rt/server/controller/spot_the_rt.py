@@ -84,7 +84,7 @@ class SpotTheRT:
             try:
                 selected_symbol = selected_common_card.index(symbol_input)
 
-                id_player_card = selected_game._get_connected_player()[player_pseudo_input]._get_player_card_id()
+                id_player_card = selected_game._get_connected_player()[player_pseudo_input]._get_id_affected_card()
                 selected_game._get_game_deck().generate_new_player_card(id_player_card=id_player_card)
                 selected_game._get_game_deck().generate_new_common_card()
                 print(f"New Common Card : {selected_game._get_game_deck()._get_card(0)}")
