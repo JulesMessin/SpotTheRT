@@ -4,12 +4,12 @@ from random import randint, shuffle
 class Dobbledeck:
     
     def __init__(self) -> None:
-        pool_symbol = ['e', '8', 't', 'k', '0', 'J', 
-                        'a', 'Z', 'G', 'F', 'v', '3', 
-                        'E', 'b', '4', 's', 'L', 'T', 
-                        'r', 'C', 'P', 'D', 'w', '9', 
-                        'q', 'x', 'p', 'N', 'A', '1', 
-                        'I', '5', 'Y', 'l', 'n', 'z']
+        pool_symbol = ['antene', 'arduino', 'binaire', 'bluetooth', 'C++', 'cartemere', 
+                        'casque', 'cisco', 'clavier', 'cloud', 'cmd', 'commutateur', 
+                        'docker', 'electrique', 'firewall', 'github', 'goofyphone', 'laptop', 
+                        'linux', 'logo', 'manette', 'onde', 'pc', 'php', 
+                        'proxmox', 'python', 'raspberry_pi', 'rj45', 'robot', 'routeur', 
+                        'satellite', 'souris', 'telephone', 'web', 'wifi', 'windows']
         
         temp_pool = pool_symbol
         self.__common_card = []
