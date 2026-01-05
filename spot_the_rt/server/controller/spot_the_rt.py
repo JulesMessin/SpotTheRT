@@ -47,6 +47,7 @@ class SpotTheRT:
                     for player_id in range(1, len(selected_game._get_connected_player()) + 1):
                         requested_common_card = selected_game._get_game_deck()._get_card(id_card=0)
                         requested_player_card = selected_game._get_game_deck()._get_card(id_card=player_id)
+                        selected_game._get_connected_player()[player_pseudo_input]._set_id_affected_card(new_id_affected_card=player_id)
                         print(f"JOUEUR ID {player_id} - CARTE COMMUNE : {requested_common_card} - CARTE JOUEUR : {requested_player_card}")
                     print("ENVOYER '3'  (lancer une partie reussi) et LES CARTES AU JOUEUR SELON 'player_id'")
                     """ ENVOYER '3'  (lancer une partie reussi) et LES CARTES AU JOUEUR SELON 'player_id' """
