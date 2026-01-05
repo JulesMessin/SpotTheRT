@@ -58,25 +58,3 @@ class Dobbledeck:
 
     def __str__(self) -> str:
         return f"Carte Commune :     {self.__common_card}\nCarte du Joueur 1 : {self.__card_player_1}\nCarte du Joueur 2 : {self.__card_player_2}\nCarte du Joueur 3 : {self.__card_player_3}\nCarte du Joueur 4 : {self.__card_player_4}\nCarte du Joueur 5 : {self.__card_player_5}\nCarte du Joueur 6 : {self.__card_player_6}\nCarte du Joueur 7 : {self.__card_player_7}\nCarte du Joueur 8 : {self.__card_player_8}\n"
-    
-
-def main():
-    game_deck = Dobbledeck()
-    print(game_deck)
-
-    """
-    Carte Commune :     ['q', 't', 'D', 'l', '0', 'F', 'w', 'J']
-    Carte du Joueur 1 : ['3', 'P', 'e', 'C', '1', 'x', 'N', 'q']
-    Carte du Joueur 2 : ['L', 'p', 'I', 'C', 's', 'A', 'G', '0']
-    Carte du Joueur 3 : ['8', 'T', 'F', 'k', 'e', 'Y', 'L', 'Z']
-    Carte du Joueur 4 : ['5', 'b', 't', 'p', 'N', 'T', 'v', '4']
-    Carte du Joueur 5 : ['I', 'x', '8', '4', 'E', 'n', '9', 'w']
-    Carte du Joueur 6 : ['r', 'b', 'a', 's', '9', 'P', 'Z', 'l']
-    Carte du Joueur 7 : ['v', 'A', 'r', 'Y', 'D', '3', 'n', 'z']
-    Carte du Joueur 8 : ['G', 'k', 'a', '5', 'E', 'J', '1', 'z']
-    Boujour
-    """
-
-
-if __name__=="__main__":
-    main()

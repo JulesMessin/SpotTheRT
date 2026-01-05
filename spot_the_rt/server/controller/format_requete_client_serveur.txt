@@ -8,29 +8,25 @@ demande de verif symbole :     <5, nom lobby, pseudo, symbole>
 
 
 --- format des requetes serveur vers les  : 
-validation creation de game : <1>
+requête creation de game validé : 10
+requête creation de game echouée : 11
 
-validation join une game : <2>
+requête join une game validé : 20
+requête join une game echouée, partie inexistante : 21
+requête join une game echouée, pseudo déjà pris  : 22
 
-validation lancement de game : <3>
+requête lancement de game validé : 30
+requête lancement de game echouée, partie inexistante : 31
+requête lancement de game echouée, pas assez de joueurs : 32
+requête lancement de game echouée, joueur non hostmaster : 33
 
-validation quitter le lobby : <4>
+requête quitter le lobby validé : 40
+echecs quitter le lobby, game inexistante : 41
+echecs quitter le lobby, personne inexistante : 42
 
-verif self symbole bon : <50, nouvelle carte commune, nouvelle carte joueur> 
-verif self symbole mauvais : <51>
-verif symbole adversaire bon : <52, nouvelle carte commune>
-
-echecs creation de game : 6
-
-echecs join une game, game inexistante : 71
-echecs join une game, pseudo déjà pris  : 72
-
-echecs lancement de game, partie inexistante : 81
-echecs lancement de game, pas assez de joueurs : 82
-echecs lancement de game, joueur non hostmaster : 83
-
-echecs quitter le lobby, personne inexistante : 92
-echecs quitter le lobby, game inexistante : 91
-
-echecs verif symbole : 10
+requête verif self symbole validé, symbole bon : 50,nouvelle_carte_commune,nouvelle_carte_joueur
+requête envoi nouvelle carte commune adversaire bon : 54,nouvelle_carte_commune
+requête verif self symbole echouée, mauvais symbole : 53
+requête verif self symbole echouée, joueur inexistant : 52
+requête verif self symbole echouée, partie inexistante : 51
 """

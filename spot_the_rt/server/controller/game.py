@@ -38,3 +38,6 @@ class Game():
 
     def remove_player_to_lobby(self, player_name_input:object) -> None:
         self._del_connected_player(connected_player_name=player_name_input)
+
+    def __str__(self):
+        return f"Liste des Joueurs dans la partie {self._get_lobby_name()} :\n{self._get_connected_player}"
