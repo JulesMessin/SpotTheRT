@@ -17,8 +17,10 @@ verif self symbole mauvais : <51>
 verif symbole adversaire bon : <52, nouvelle carte commune>
 
 echecs creation de game : 6
-echecs join une game : 7
+echecs join une game, game inexistante : 71
+echecs join une game, pseudo déjà pris  : 72
 echecs lancement de game : 8
-echecs quitter le lobby : 9
+echecs quitter le lobby, personne inexistante : 92
+echecs quitter le lobby, game inexistante : 91
 echecs verif symbole : 10
 """

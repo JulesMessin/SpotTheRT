@@ -3,14 +3,14 @@ from random import randint, shuffle
 
 class Dobbledeck:
     
-    def __init__(self):
+    def __init__(self) -> None:
         pool_symbol = ['e', '8', 't', 'k', '0', 'J', 
                         'a', 'Z', 'G', 'F', 'v', '3', 
                         'E', 'b', '4', 's', 'L', 'T', 
                         'r', 'C', 'P', 'D', 'w', '9', 
                         'q', 'x', 'p', 'N', 'A', '1', 
                         'I', '5', 'Y', 'l', 'n', 'z']
-
+        
         temp_pool = pool_symbol
         self.__common_card = []
         self.__card_player_1 = []
@@ -35,41 +35,29 @@ class Dobbledeck:
             shuffle(self.__list_cards[card])
         self.__card_distributed = 0
 
-    def _get_card(self, id_card):
+    def _get_card(self, id_card:int) -> list:
         return self.__list_cards[id_card]
 
-    def _set_card(self, old_card, new_card):
-        old_card = new_card
+    def _set_card(self, old_card:list, new_card:list) -> None:
+        old_card.clear()
+        old_card.extend(new_card)
 
-    def generate_new_player_card(self, id_player_card):
-        common_card = self.get_card(0)
-        player_card = self.get_card(id_player_card)
-        self._set_card(player_card, common_card)
+    def generate_new_player_card(self, id_player_card:int) -> None:
+        common_card = self._get_card(0)
+        player_card = self._get_card(id_player_card)
+        self._set_card(old_card=player_card, new_card=common_card)
 
-    def generate_new_common_card(self):
-        old_common_card = _get_card(0)
+    def generate_new_common_card(self) -> None:
+        old_common_card = self._get_card(0)
         new_common_card = []
-        for card in range(1, 9):
+        for card in range(9):
             random_symbol = randint(0, 7)
             selected_card = self._get_card(card)
             new_common_card.append(selected_card[random_symbol])
+        self._set_card(old_card=old_common_card, new_card=new_common_card)
 
-        self._set_card(old_common_card, new_common_card)
-
-    def give_card(self):
-        pass
-
-    def __str__(self):
-        print(f"Carte Commune :     {self.__common_card}")
-        print(f"Carte du Joueur 1 : {self.__card_player_1}")
-        print(f"Carte du Joueur 2 : {self.__card_player_2}")
-        print(f"Carte du Joueur 3 : {self.__card_player_3}")
-        print(f"Carte du Joueur 4 : {self.__card_player_4}")
-        print(f"Carte du Joueur 5 : {self.__card_player_5}")
-        print(f"Carte du Joueur 6 : {self.__card_player_6}")
-        print(f"Carte du Joueur 7 : {self.__card_player_7}")
-        print(f"Carte du Joueur 8 : {self.__card_player_8}")
-        return "Boujour"
+    def __str__(self) -> str:
+        return f"Carte Commune :     {self.__common_card}\nCarte du Joueur 1 : {self.__card_player_1}\nCarte du Joueur 2 : {self.__card_player_2}\nCarte du Joueur 3 : {self.__card_player_3}\nCarte du Joueur 4 : {self.__card_player_4}\nCarte du Joueur 5 : {self.__card_player_5}\nCarte du Joueur 6 : {self.__card_player_6}\nCarte du Joueur 7 : {self.__card_player_7}\nCarte du Joueur 8 : {self.__card_player_8}\n"
     
 
 def main():
