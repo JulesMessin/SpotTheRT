@@ -50,13 +50,43 @@ class ServerController:
                             thread.client_socket.send(new_message)
                             break
         
+        elif message.startswith("game"):
+            parts = message.split()
+            if len(parts) == 0:
+                return
+
+            sender = parts[0]
+
+            if "-create" in parts:
+                try:
+                    spot_the_RT_game.create_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+
+            elif "-join" in parts:
+                try:
+                    spot_the_RT_game.join_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+
+            elif "-launch" in parts:
+                try:
+                   spot_the_RT_game.launch_game_request(lobby_name_input=request[1])
+
+
+            elif "-quit" in parts:
+                try:
+                    spot_the_RT_game.quit_game_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+
+
+            elif "-check" in parts:
+                try:
+                    spot_the_RT_game.is_symbol_correct_request(lobby_name_input=request[1], player_pseudo_input=request[2], symbol_input=request[3])
+                          
+
+        
         # message
         else:
             new_message = f"{client_username} : {message}"
             new_message = new_message.encode('utf-8')
             for thread in self.clients:
                     thread.client_socket.send(new_message)
-
 
         self.view.display_message(client_address, client_username, new_message)
 
