@@ -27,8 +27,9 @@ class ReceiveThread(QThread):
 
 
 class ClientController:
-    def __init__(self, model):
+    def __init__(self, model, view):
         self.model = model
+        self.view = view
         self.receive_thread = None
 
     def connect_to_server(self, ip, port, message_callback, status_callback, username):
@@ -39,14 +40,52 @@ class ClientController:
             self.model.connected = True
             
             status_callback(f"Connecté à {ip}:{port} en tant que {username}")
-
+            
             self.receive_thread = ReceiveThread(self.model.client_socket)
-            self.receive_thread.message_received.connect(message_callback)
+            self.receive_thread.message_received.connect(self.handle_message)
             self.receive_thread.start()
         except Exception as e:
             status_callback("Statut : erreur de connexion")
             raise e
 
+
+    def handle_message(self, message):
+        if message.startswith("void"):
+            parts = message.split()
+            if "-setbackground" in parts:
+                try:
+                    color_index = parts.index("-setbackground") + 1
+                    color = parts[color_index]
+                    self.view.response_area.setStyleSheet(f"background-color: {color};")
+                except IndexError:
+                    self.view.display_message("Erreur : couleur manquante")
+
+        elif message.startswith("game"):
+            parts = message.split()
+            if "-room" in parts:
+                try:
+                    room_index = parts.index("-room") + 1
+                    room_name = parts[room_index]
+                except IndexError:
+                    self.view.display_message("Erreur : nom de la room manquant")
+                    return
+
+                if "-host" in parts:
+                    self.join_waiting_room(username=self.view.username_field.text(),
+                                           room_name=room_name,
+                                           is_host=True)
+                    print("host")
+
+                elif "-join" in parts:
+                    self.join_waiting_room(username=self.view.username_field.text(),
+                                           room_name=room_name,
+                                           is_host=False)
+                    print("join")
+                            
+        else:
+            self.view.display_message(message)
+
+    ###
     def send_message(self, message):
         if self.model.connected:
             try:
@@ -54,7 +93,21 @@ class ClientController:
             except Exception as e:
                 raise e
 
+    ###
     def disconnect(self):
         if self.receive_thread:
             self.receive_thread.stop()
             self.model.connected = False
+
+    ###
+    def join_waiting_room(self, username, room_name, is_host):
+        from view.waiting_room_view import WaitingRoom  
+        self.view.waiting_room_view = WaitingRoom(username, room_name, is_host)
+        self.view.waiting_room_view.show()
+        self.view.hide()
+
+    def leave_waiting_room(self, username, room_name, is_host):
+        self.send_message(self, f"game -room {room} -leave")
+        self.view.login_view = LoginView()
+        self.view.login_view.show()
+        self.view.hide()

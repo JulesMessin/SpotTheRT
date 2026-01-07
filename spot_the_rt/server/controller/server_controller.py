@@ -19,6 +19,8 @@ class ServerController:
             thread.start()
             self.view.display_connection(client_address, client_username)
 
+            
+
     def handle_message(self, client_address, client_username, message):
         self.view.display_message(client_address, client_username ,message)
         new_message = ""
@@ -57,22 +59,43 @@ class ServerController:
 
             sender = parts[0]
 
-            if "-create" in parts:
-                    spot_the_RT_game.create_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+            if "-room" in parts:
+                    try:
+                        room_identifier = parts.index("-room") + 1
+                        room_name = parts[room_identifier]
+                    except IndexError:
+                        new_message = "Erreur : nnom de la room manquant"
 
-            elif "-join" in parts:
-                    spot_the_RT_game.join_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+                    if "-host" in parts:
+                        #spot_the_RT_game.create_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+                        new_message = f"game -room {room_name} -host"
+                        self.view.display_room_create(client_address, client_username, room_name)
 
-            elif "-launch" in parts:
-                   spot_the_RT_game.launch_game_request(lobby_name_input=request[1])
+                    if "-join" in parts:
+                        #spot_the_RT_game.create_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+                        new_message = f"game -room {room_name} -join"
+                        self.view.display_room_join(client_address, client_username, room_name)
 
-            elif "-quit" in parts:
-                    spot_the_RT_game.quit_game_request(lobby_name_input=request[1], player_pseudo_input=request[2])
 
-            elif "-check" in parts:
-                    spot_the_RT_game.is_symbol_correct_request(lobby_name_input=request[1], player_pseudo_input=request[2], symbol_input=request[3])
-                          
 
+           # elif "-join" in parts:
+            #        spot_the_RT_game.join_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+
+           # elif "-launch" in parts:
+            #       spot_the_RT_game.launch_game_request(lobby_name_input=request[1])
+
+           # elif "-quit" in parts:
+              #      spot_the_RT_game.quit_game_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+
+            #elif "-check" in parts:
+                   # spot_the_RT_game.is_symbol_correct_request(lobby_name_input=request[1], player_pseudo_input=request[2], symbol_input=request[3])
+     
+
+            for thread in self.clients:
+                    if thread.client_address == client_address:
+                        new_message = new_message.encode('utf-8')
+                        thread.client_socket.send(new_message)
+                        break
         
         # message
         else:
@@ -80,8 +103,7 @@ class ServerController:
             new_message = new_message.encode('utf-8')
             for thread in self.clients:
                     thread.client_socket.send(new_message)
-
-        self.view.display_message(client_address, client_username, new_message)
+            self.view.display_message(client_address, client_username, new_message)
 
 
     def client_disconnected(self, client_address, client_username):
