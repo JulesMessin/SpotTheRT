@@ -60,8 +60,9 @@ class ClientController:
                 except IndexError:
                     self.view.display_message("Erreur : couleur manquante")
 
-        elif message.startswith("game"):
+        elif message.startswith("client"):
             parts = message.split()
+            current_room = None
             if "-room" in parts:
                 try:
                     room_index = parts.index("-room") + 1
@@ -80,10 +81,22 @@ class ClientController:
                     self.join_waiting_room(username=self.view.username_field.text(),
                                            room_name=room_name,
                                            is_host=False)
+                    current_room = room_name
                     print("join")
-                            
-        else:
-            self.view.display_message(message)
+
+                elif "-launch" in parts:
+                    self.show_game_room(username=self.view.username_field.text(),
+                                           room_name=room_name)
+                    print("launch")
+
+                elif "-chat" in parts:
+                    new_message = parts.index("-chat") + 1
+                    color = parts[color_index]
+                    self.show_game_room(username=self.view.username_field.text(),
+                                           room_name=room_name)
+                    print("message reçu")
+                    self.view.game_view.display_message(new_message)        
+
 
     ###
     def send_message(self, message):
@@ -103,11 +116,31 @@ class ClientController:
     def join_waiting_room(self, username, room_name, is_host):
         from view.waiting_room_view import WaitingRoom  
         self.view.waiting_room_view = WaitingRoom(username, room_name, is_host)
+
+        self.view.waiting_room_view.set_controller(self)
+
         self.view.waiting_room_view.show()
         self.view.hide()
 
-    def leave_waiting_room(self, username, room_name, is_host):
-        self.send_message(self, f"game -room {room} -leave")
-        self.view.login_view = LoginView()
-        self.view.login_view.show()
-        self.view.hide()
+    def leave_waiting_room(self, room_name):
+        self.send_message(f"server -room {room_name} -leave")
+        self.view.waiting_room_view.hide()
+        self.view.show()
+
+
+    def launch_game(self, room_name):
+        self.send_message(f"server -room {room_name} -launch")
+        print("envoyé 2")
+
+
+    def show_game_room(self, username, room_name):
+        print("envoyé 3")
+        from view.game_view import GameView
+        self.view.game_view = GameView(username, room_name)
+
+        self.send_message(f"server -room {room_name} -lauch")
+
+        self.view.game_view.set_controller(self)
+
+        self.view.waiting_room_view.hide()
+        self.view.game_view.show()

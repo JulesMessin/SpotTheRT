@@ -5,8 +5,8 @@ class ConsoleView:
     def display_username_error(self, client_address, client_username, room_number):
         print(f"ERROR : Pseudo deja pris pour {client_address}")
 
-    def display_message(self, client_address, client_username, message):
-        print(f"{client_username} >> {message}")
+    def display_message(self, client_address, client_username, room_number , message):
+        print(f"ROOM {room_number} : {client_username} >> {message}")
 
     def display_disconnection(self, client_address, client_username):
         print(f"[-] Client déconnecté : {client_address} alias {client_username}")
@@ -14,10 +14,10 @@ class ConsoleView:
     ###
 
     def display_room_create(self, client_address, client_username, room_number):
-        print(f"[+] Creation d'une salle par {client_username}@{client_address}, numéro {room_number}")
+        print(f"ROOM {room_number} : [+] Creation d'une salle par {client_username}@{client_address}")
 
     def display_room_delete(self, client_address, client_username, room_number):
-        print(f"[-] Supression d'une salle par {client_username}@{client_address}, numéro {room_number}")
+        print(f"ROOM {room_number} : [-] Supression d'une salle par {client_username}@{client_address}")
 
     ###
 

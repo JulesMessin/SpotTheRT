@@ -37,26 +37,15 @@ class LoginView(QMainWindow):
         self.username_field.setPlaceholderText("Username")
         layout.addWidget(self.username_field)
 
-        self.message_input = QTextEdit()
-        self.message_input.setPlaceholderText("Entrez votre message ici...")
-        layout.addWidget(self.message_input)
-
         self.connect_button = QPushButton("Se connecter")
         layout.addWidget(self.connect_button)
 
-        self.send_button = QPushButton("Envoyer le message")
-        self.send_button.setEnabled(False)
-        layout.addWidget(self.send_button)
 
-        self.response_area = QTextEdit()
-        self.response_area.setReadOnly(True)
-        layout.addWidget(self.response_area)
 
             
     def set_controller(self, controller):
         self.controller = controller
         self.connect_button.clicked.connect(self.on_connect)
-        self.send_button.clicked.connect(self.on_send)
 
     def on_connect(self):
         ip = self.ip_field.text()
@@ -64,7 +53,6 @@ class LoginView(QMainWindow):
         username = self.username_field.text()
         try:
             self.controller.connect_to_server(ip, port, self.display_message, self.update_status, username)
-            self.send_button.setEnabled(True)
             #
 
             msg = QMessageBox(self)
@@ -80,8 +68,8 @@ class LoginView(QMainWindow):
                 return
 
 
-            room = dialog.room_name
-            self.controller.send_message(f"game -room {room} -{mode}")
+            room_name = dialog.room_name
+            self.controller.send_message(f"server -room {room_name} -{mode}")
 
 
         except Exception as e:

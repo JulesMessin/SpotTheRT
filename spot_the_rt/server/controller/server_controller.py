@@ -22,8 +22,8 @@ class ServerController:
             
 
     def handle_message(self, client_address, client_username, message):
-        self.view.display_message(client_address, client_username ,message)
         new_message = ""
+
         # commande
         if message.startswith("void"):
             parts = message.split()
@@ -52,7 +52,7 @@ class ServerController:
                             thread.client_socket.send(new_message)
                             break
         
-        elif message.startswith("game"):
+        elif message.startswith("server"):
             parts = message.split()
             if len(parts) == 0:
                 return
@@ -68,14 +68,28 @@ class ServerController:
 
                     if "-host" in parts:
                         #spot_the_RT_game.create_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
-                        new_message = f"game -room {room_name} -host"
+                        new_message = f"client -room {room_name} -host"
                         self.view.display_room_create(client_address, client_username, room_name)
 
-                    if "-join" in parts:
+                    elif "-join" in parts:
                         #spot_the_RT_game.create_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
-                        new_message = f"game -room {room_name} -join"
+                        new_message = f"client -room {room_name} -join"
                         self.view.display_room_join(client_address, client_username, room_name)
 
+                    elif "-leave" in parts:
+                        #spot_the_RT_game.create_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+                        new_message = f"client -room {room_name} -leave"
+                        self.view.display_room_leave(client_address, client_username, room_name)
+
+                    elif "-launch" in parts:
+                        #spot_the_RT_game.create_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+                        new_message = f"client -room {room_name} -launch"
+                        self.view.display_room_launch(client_address, client_username, room_name)
+
+                    elif "-chat" in parts:
+                        #spot_the_RT_game.create_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+                        new_message = f"client -room {room_name} -chat {new_message}"
+                        self.view.display_room_launch(client_address, client_username, room_name)
 
 
            # elif "-join" in parts:
