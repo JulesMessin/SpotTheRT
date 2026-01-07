@@ -47,8 +47,10 @@ class GameView(QMainWindow):
     def on_send(self):
         message = self.message_input.toPlainText().strip()
         if message and self.controller:
-            self.controller.send_message(message)
+            self.controller.send_message(f"server -room {self.room_name} -chat {message}")
             self.message_input.clear()
+        print("envoyé")
+
 
     def display_message(self, message):
         self.chat_area.append(message)

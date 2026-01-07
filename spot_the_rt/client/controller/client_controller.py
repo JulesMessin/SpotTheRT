@@ -31,6 +31,7 @@ class ClientController:
         self.model = model
         self.view = view
         self.receive_thread = None
+        self.current_room = None
 
     def connect_to_server(self, ip, port, message_callback, status_callback, username):
         try:
@@ -50,25 +51,16 @@ class ClientController:
 
 
     def handle_message(self, message):
-        if message.startswith("void"):
             parts = message.split()
-            if "-setbackground" in parts:
-                try:
-                    color_index = parts.index("-setbackground") + 1
-                    color = parts[color_index]
-                    self.view.response_area.setStyleSheet(f"background-color: {color};")
-                except IndexError:
-                    self.view.display_message("Erreur : couleur manquante")
 
-        elif message.startswith("client"):
-            parts = message.split()
-            current_room = None
-            if "-room" in parts:
+            if not parts:
+                return
+
+            if parts[0] == "client" and "-room" in parts:
                 try:
                     room_index = parts.index("-room") + 1
                     room_name = parts[room_index]
                 except IndexError:
-                    self.view.display_message("Erreur : nom de la room manquant")
                     return
 
                 if "-host" in parts:
@@ -76,6 +68,7 @@ class ClientController:
                                            room_name=room_name,
                                            is_host=True)
                     print("host")
+                    self.current_room = room_name
 
                 elif "-join" in parts:
                     self.join_waiting_room(username=self.view.username_field.text(),
@@ -83,20 +76,21 @@ class ClientController:
                                            is_host=False)
                     current_room = room_name
                     print("join")
+                    self.current_room = room_name
 
                 elif "-launch" in parts:
                     self.show_game_room(username=self.view.username_field.text(),
                                            room_name=room_name)
                     print("launch")
+                    self.current_room = room_name
 
                 elif "-chat" in parts:
-                    new_message = parts.index("-chat") + 1
-                    color = parts[color_index]
-                    self.show_game_room(username=self.view.username_field.text(),
-                                           room_name=room_name)
-                    print("message reçu")
-                    self.view.game_view.display_message(new_message)        
-
+                    chat_index = parts.index("-chat") + 1
+                    chat_message = " ".join(parts[chat_index:])
+                    print("message : ",chat_message)
+                    if hasattr(self, "current_room") and self.current_room == room_name:
+                        if hasattr(self.view, "game_view") and self.view.game_view:
+                            self.view.game_view.display_message(chat_message)
 
     ###
     def send_message(self, message):
