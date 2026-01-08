@@ -1,10 +1,7 @@
-from dobbledeck import Dobbledeck
 from game import Game
-from player import Player
 
-from model.client_thread import ClientThread
 
-class SpotTheRT:
+class GameController:
 
     def __init__(self, dict_game:dict = {}) -> None:
         self.__dict_game = dict_game
@@ -15,85 +12,149 @@ class SpotTheRT:
     def _get_dict_game(self) -> dict:
         return self.__dict_game
 
-    def create_lobby_request(self, lobby_name_input:str, player_pseudo_input:str) -> None:
+    def create_lobby_request(self, lobby_name_input:str, player_pseudo_input:str):
+
+        # Verifier si le nom du lobby n'existe pas déjà
         if not lobby_name_input in self._get_dict_game().keys():
-            new_game_id = len(self._get_dict_game()) + 1
-            new_game = Game(lobby_name=lobby_name_input, game_id=new_game_id)
+            # Créer la nouvelle partie, l'ajouter au dictionnaire et ajouter le joueur en tant qu'hostmaster
+            new_game = Game(lobby_name=lobby_name_input)
             self._add_game(lobby_name_input=lobby_name_input, new_game_input=new_game)
             new_game.add_player_to_lobby(new_player_name=player_pseudo_input, new_player_status=True)
-            print(" ENVOYER '1' (requête créer un lobby reussit) AU DEMANDEUR ")
-            """ ENVOYER '1' (requête créer un lobby reussit) AU DEMANDEUR """
+            return "CREATE_ACK"
         else:
-            print("ENVOYER '6' (requête créer un lobby echouée) AU DEMANDEUR")
-            """ ENVOYER '6' (requête créer un lobby echouée) AU DEMANDEUR """
+            # Lobby déjà existant
+            return "CREATE_FAIL"
+            
+    def join_lobby_request(self, lobby_name_input:str, player_pseudo_input:str):
 
-    def join_lobby_request(self, lobby_name_input:str, player_pseudo_input:str) -> None:
+        # Verifier si le nom du lobby n'existe pas déjà
         if lobby_name_input in self._get_dict_game().keys():
             selected_game = self._get_dict_game()[lobby_name_input]
-            if not player_pseudo_input in selected_game._get_connected_player().keys():
-                selected_game.add_player_to_lobby(new_player_name=player_pseudo_input, new_player_status=False)
-                print("ENVOYER '2' (requête rejoindre un lobby reussit) AU DEMANDEUR")
-                """ ENVOYER '2' (requête rejoindre un lobby reussit) AU DEMANDEUR """
-            else:
-                print("ENVOYER '72' (requête rejoindre un lobby echouée, pseudo déjà utilisé) AU DEMANDEUR")
-                """ ENVOYER '72' (requête rejoindre un lobby echouée, pseudo déjà utilisé) AU DEMANDEUR """
-        else:
-            print("ENVOYER '71' (requête rejoindre un lobby echouée, lobby inexistant) AU DEMANDEUR")
-            """ ENVOYER '71' (requête rejoindre un lobby echouée, lobby inexistant) AU DEMANDEUR """
 
-    def launch_game_request(self, lobby_name_input:str, player_pseudo_input:str) -> None:
-        if lobby_name_input in self._get_dict_game().keys():
-            selected_game = self._get_dict_game()[lobby_name_input]
-            if selected_game._get_connected_player()[player_pseudo_input]._get_is_hostmaster():
-                if len(selected_game._get_connected_player()) >= 2:
-                    for player_id in range(1, len(selected_game._get_connected_player()) + 1):
-                        requested_common_card = selected_game._get_game_deck()._get_card(id_card=0)
-                        requested_player_card = selected_game._get_game_deck()._get_card(id_card=player_id)
-                        print(f"JOUEUR ID {player_id} - CARTE COMMUNE : {requested_common_card} - CARTE JOUEUR : {requested_player_card}")
-                    print("ENVOYER '3'  (lancer une partie reussi) et LES CARTES AU JOUEUR SELON 'player_id'")
-                    """ ENVOYER '3'  (lancer une partie reussi) et LES CARTES AU JOUEUR SELON 'player_id' """
+            # Verifier si la partie n'est pas pleine
+            if len(selected_game._get_connected_player()) < 8:
+
+                # Verifier si le pseudo n'est pas déjà pris
+                if not player_pseudo_input in selected_game._get_connected_player().keys():
+                    # Ajouter le joueur à la partie
+                    selected_game.add_player_to_lobby(new_player_name=player_pseudo_input, new_player_status=False)
+                    return "JOIN_ACK", selected_game._get_connected_player().keys()
                 else:
-                    print("ENVOYER '82' (requête lancer une partie echouée, pas assez de joueurs) AU DEMANDEUR")
-                    """ ENVOYER '82' (requête lancer une partie echouée, pas assez de joueurs) AU DEMANDEUR """
+                    # Pseudo déjà pris
+                    return "JOIN_FAIL_PSEUDO"
             else:
-                print("ENVOYER '83' (requête lancer une partie echouée, joueur non hostmaster) AU DEMANDEUR")
-                """ ENVOYER '83' (requête lancer une partie echouée, joueur non hostmaster) AU DEMANDEUR """
+                # Lobby plein
+                return "JOIN_FAIL_LOBBY_FULL"
         else:
-            print("ENVOYER '81' (requête lancer une partie echouée, partie inexistante) AU DEMANDEUR")
-            """ ENVOYER '81' (requête lancer une partie echouée, partie inexistante) AU DEMANDEUR """
+            # Lobby non trouvé
+            return "JOIN_FAIL_NO_LOBBY"
+            
+    def launch_game_request(self, lobby_name_input:str, player_pseudo_input:str, nb_round_input:int):
+
+        # Verifier si le nom du lobby n'existe pas déjà
+        if lobby_name_input in self._get_dict_game().keys():
+            selected_game = self._get_dict_game()[lobby_name_input]
+
+            # Verifier si le joueur est bien dans la partie
+            if  player_pseudo_input in selected_game._get_connected_player().keys():
+
+                # Verifier si le joueur est l'hostmaster
+                if selected_game._get_connected_player()[player_pseudo_input]._get_is_hostmaster():
+
+                    # Verifier si il y a assez de joueurs (> 2) pour lancer la partie
+                    if len(selected_game._get_connected_player()) >= 2:
+                        # Lancer la partie
+                        selected_game._set_nb_round(new_nb_round=nb_round_input)
+                        return "LAUNCH_ACK", selected_game._get_game_deck()._get_list_cards()
+                    else:
+                        # Lobby pas assez rempli
+                        return "LAUNCH_FAIL_NOT_ENOUGH_PLAYER"
+                else:
+                    # Joueur n'est pas l'hostmaster
+                    return "LAUNCH_FAIL_NOT_HOST"
+            else:
+                # Joueur non trouvé
+                return "LAUNCH_FAIL_NO_PLAYER"
+        else:
+            # Lobby non trouvé
+            return "LAUNCH_FAIL_NO_LOBBY"
 
     def quit_game_request(self, lobby_name_input:str, player_pseudo_input:str) -> None:
+        
+        # Verifier si le nom du lobby n'existe pas déjà
         if lobby_name_input in self._get_dict_game().keys():
             selected_game = self._get_dict_game()[lobby_name_input]
-            if  player_pseudo_input in selected_game._get_connected_player().keys():
+
+            # Verifier si le joueur est bien dans la partie
+            if player_pseudo_input in selected_game._get_connected_player().keys():
+                # Supprimer le joueur de la partie verifier si la partie est vide, si oui la supprimer
                 selected_game.remove_player_to_lobby(player_name_input=player_pseudo_input)
                 if len(selected_game._get_connected_player()) == 0:
                     self._get_dict_game().pop(lobby_name_input)
-                print("ENVOYER '4' (requête quitter une partie reussit) AU DEMANDEUR")
-                """ ENVOYER '4' (requête quitter une partie reussit) AU DEMANDEUR """  
+                return "EXIT_ACK"
             else:
-                print("ENVOYER '92' (requête quitter une partie echouée, joueur inexistant) AU DEMANDEUR")
-                """ ENVOYER '92' (requête quitter une partie echouée, joueur inexistant) AU DEMANDEUR """          
+                # Joueur non trouvé
+                return "EXIT_FAIL_NO_PLAYER"
         else:
-            print("ENVOYER '91' (requête quitter une partie echouée) AU DEMANDEUR")
-            """ ENVOYER '91' (requête quitter une partie echouée) AU DEMANDEUR """            
-
+            # Lobby non trouvé
+            return "EXIT_FAIL_NO_LOBBY"
+            
     def is_symbol_correct_request(self, lobby_name_input:str, player_pseudo_input:str, symbol_input:str) -> None:
+        
+        # Verifier si le nom du lobby n'existe pas déjà
         if lobby_name_input in self._get_dict_game().keys():
             selected_game = self._get_dict_game()[lobby_name_input]
-            selected_common_card = selected_game._get_game_deck()._get_card(0)
-            try:
-                selected_symbol = selected_common_card.index(symbol_input)
 
-                id_player_card = selected_game._get_connected_player()[player_pseudo_input]._get_player_card_id()
-                selected_game._get_game_deck().generate_new_player_card(id_player_card=id_player_card)
-                selected_game._get_game_deck().generate_new_common_card()
-                print(f"New Common Card : {selected_game._get_game_deck()._get_card(0)}")
-                print(f"New Player Card : {selected_game._get_game_deck()._get_card(id_player_card)}")
-                print("ENVOYER '50' (requête verif self symbole bon) AU DEMANDEUR")
-                print("ENVOYER '52' (requête verif symbole adversaire bon) AUX AUTRES")
-                """ ENVOYER '50' (requête verif self symbole bon) AU DEMANDEUR """
-                """ ENVOYER '52' (requête verif symbole adversaire bon) AUX AUTRES """
-            except ValueError:
-                print("ENVOYER '51' (requête verif self symbole mauvais) AU DEMANDEUR")
-                """ ENVOYER '51' (requête verif self symbole mauvais) AU DEMANDEUR """
+            # Verifier si le joueur est bien dans la partie
+            if player_pseudo_input in selected_game._get_connected_player().keys():
+                selected_common_card = selected_game._get_game_deck()._get_card(0)
+                id_card_player = selected_game._get_connected_player()[player_pseudo_input]._get_id_affected_card()
+                selected_player_card = selected_game._get_game_deck()._get_card(id_card_player)
+                
+                # Vérifier si le symbole est présent dans la carte commune et dans la carte du joueur
+                if symbol_input in selected_common_card and symbol_input in selected_player_card:
+                    # Donner la carte commune au joueur
+                    id_player_card = selected_game._get_connected_player()[player_pseudo_input]._get_id_affected_card()
+                    selected_game._get_game_deck().give_new_player_card(id_player_card=id_player_card)
+
+                    # Générer une nouvelle carte commune
+                    selected_game._get_game_deck().generate_new_common_card()
+
+                    # Incrémenter le score du joueur
+                    new_player_point = selected_game._get_connected_player()[player_pseudo_input]._get_player_point() + 1
+                    selected_game._get_connected_player()[player_pseudo_input]._set_player_point(new_player_point=new_player_point)
+
+                    # Décrémenter le nombre de round restant                    
+                    new_nb_round = int(selected_game._get_nb_round()) - 1
+                    selected_game._set_nb_round(new_nb_round=new_nb_round)
+
+                    # Vérifier si la partie est terminée
+                    if selected_game._get_nb_round() == 0:
+                        # Fin de la partie
+                        # Trouver le gagnant en trouvant le score le plus élevé et le joueur associé
+                        list_point = []
+                        for p in selected_game._get_connected_player().values():
+                            list_point.append(p._get_player_point())
+                        max_point = max(list_point)
+
+                        for key, player in selected_game._get_connected_player().items():
+                            if player._get_player_point() == max_point:
+                                winner_player_name = key
+                                winner_player_point = player._get_player_point()
+
+                        # Supprimer la partie du dictionnaire
+                        self._get_dict_game().pop(lobby_name_input)
+
+                        return "GAME_OVER", winner_player_name, winner_player_point
+                    else:
+                        # Symbole correct, continuer la partie
+                        return "SYMBOL_ACK", selected_game._get_game_deck()._get_list_cards(), selected_game._get_connected_player()[player_pseudo_input]._get_player_point(), selected_game._get_nb_round()
+                else:
+                    # Symbole incorrect
+                    return "SYMBOL_FAIL"
+            else:
+                # Joueur non trouvé
+                return "SYMBOL_FAIL_NO_PLAYER"
+        else:
+            # Lobby non trouvé
+            return "SYMBOL_FAIL_NO_LOBBY"

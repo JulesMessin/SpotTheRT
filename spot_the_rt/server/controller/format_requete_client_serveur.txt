@@ -1,32 +1,77 @@
 """
 --- format des requetes clientes vers le serveur : 
-demande de creation de game :  <1, nom lobby, pseudo>
-demande de join une game :     <2, nom lobby, pseudo>
-demande de lancement de game : <3, nom lobby, pseudo>
-demande de quitter le lobby :  <4, nom lobby, pseudo>
-demande de verif symbole :     <5, nom lobby, pseudo, symbole>
+demande de creation de game :  <"CREATE", nom lobby, pseudo>
+demande de join une game :     <"JOIN", nom lobby, pseudo>
+demande de lancement de game : <"LAUNCH", nom lobby, pseudo, nb_round>
+demande de quitter le lobby :  <"EXIT", nom lobby, pseudo>
+demande de verif symbole :     <"VERIFY", nom lobby, pseudo, symbole>
 
 
---- format des requetes serveur vers les  : 
-requête creation de game validé : 10
-requête creation de game echouée : 11
+--- format des requetes serveur vers les clientes : 
+requête creation de game validé : "CREATE_ACK"
+à envoyer au client source : "CREATE_ACK"
 
-requête join une game validé : 20
-requête join une game echouée, partie inexistante : 21
-requête join une game echouée, pseudo déjà pris  : 22
+requête creation de game echouée, partie déjà existante : "CREATE_FAIL"
+à envoyer au client source : "CREATE_FAIL"
 
-requête lancement de game validé : 30
-requête lancement de game echouée, partie inexistante : 31
-requête lancement de game echouée, pas assez de joueurs : 32
-requête lancement de game echouée, joueur non hostmaster : 33
 
-requête quitter le lobby validé : 40
-echecs quitter le lobby, game inexistante : 41
-echecs quitter le lobby, personne inexistante : 42
+requête join une game validé : "JOIN_ACK"
+à envoyer à touts les clients dans le lobby : "JOIN_ACK", Liste_nom_joueur
 
-requête verif self symbole validé, symbole bon : 50,nouvelle_carte_commune,nouvelle_carte_joueur
-requête envoi nouvelle carte commune adversaire bon : 54,nouvelle_carte_commune
-requête verif self symbole echouée, mauvais symbole : 53
-requête verif self symbole echouée, joueur inexistant : 52
-requête verif self symbole echouée, partie inexistante : 51
+requête join une game echouée, partie inexistante : "JOIN_FAIL_NO_LOBBY"
+à envoyer au client source : "JOIN_FAIL_NO_LOBBY"
+
+requête join une game echouée, lobby rempli : "JOIN_FAIL_LOBBY_FULL"
+à envoyer au client source : "LAUNCH_FAIL_LOBBY_FULL"
+
+requête join une game echouée, pseudo déjà pris  : "JOIN_FAIL_PSEUDO"
+à envoyer au client source : "JOIN_FAIL_PSEUDO"
+
+
+requête lancement de game validé : "LAUNCH_ACK"
+à envoyer à touts les clients dans le lobby : "LAUNCH_ACK", Liste_carte_dobble
+
+requête lancement de game echouée, partie inexistante : "LAUNCH_FAIL_NO_LOBBY"
+à envoyer au client source : "LAUNCH_FAIL_NO_LOBBY"
+
+requête lancement de game echouée, pas assez de joueurs : "LAUNCH_FAIL_NOT_ENOUGH_PLAYER"
+à envoyer au client source : "LAUNCH_FAIL_NOT_ENOUGH_PLAYER"
+
+requête lancement de game echouée, joueur non hostmaster : "LAUNCH_FAIL_NOT_HOST"
+à envoyer au client source : "LAUNCH_FAIL_NOT_HOST"
+
+requête lancement de game echouée, joueur inexistant : "LAUNCH_FAIL_NOT_HOST"
+à envoyer au client source : "LAUNCH_FAIL_NO_PLAYER"
+
+
+requête quitter le lobby validé : "EXIT_ACK"
+à envoyer au client source : "EXIT_ACK"
+à envoyer aux autres clients dans le lobby : "EXIT_ACK_NEW", Liste_nom_joueur
+
+requête quitter le lobby echouée, game inexistante : "EXIT_FAIL_NO_LOBBY"
+à envoyer au client source : "EXIT_FAIL_NO_LOBBY"
+
+requête quitter le lobby echouée, personne inexistante : "EXIT_FAIL_NO_PLAYER"
+à envoyer au client source : "EXIT_FAIL_NO_PLAYER"
+
+
+requête verif symbole validé, symbole bon : "SYMBOL_ACK" ou "GAME_OVER"
+si nb_round > 0 :
+- à envoyer au client source : "VERIFY_ACK", nouvelle_carte_commune, nouvelle_carte_joueur, point_joueur, nb_round
+- à envoyer aux autres clients dans le lobby : "SYMBOL_ACK_ENEMY"nouvelle_carte_commune, , point_joueur, nb_round
+sinon:
+- à envoyer à touts les clients dans le lobby : "GAME_OVER", Joueur_gagnant, Nb_point_joueur_gagnant
+
+
+requête verif symbole echouée, mauvais symbole : "SYMBOL_FAIL"
+à envoyer au client source : "SYMBOL_FAIL"
+
+requête verif symbole echouée, joueur inexistant : "SYMBOL_FAIL_NO_PLAYER"
+à envoyer au client source : "SYMBOL_FAIL_NO_PLAYER"
+
+requête verif symbole echouée, partie inexistante : "SYMBOL_FAIL_NO_LOBBY"
+à envoyer au client source : "SYMBOL_FAIL_NO_LOBBY"
+
+
+
 """

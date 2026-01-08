@@ -40,4 +40,21 @@ class Game():
         self._del_connected_player(connected_player_name=player_name_input)
 
     def __str__(self):
-        return f"Liste des Joueurs dans la partie {self._get_lobby_name()} :\n{self._get_connected_player}"
+        return f"Liste des Joueurs dans la partie {self._get_lobby_name()} :\n{self._get_connected_player()}"
+
+# Test du code
+def main():
+    game_test = Game(lobby_name="TestLobby")
+    game_test.add_player_to_lobby(new_player_name="Alice", new_player_status=True)
+    game_test.add_player_to_lobby(new_player_name="Bob", new_player_status=False)
+    print(game_test)
+
+if __name__=='__main__':
+    main()
+
+
+"""
+Liste des Joueurs dans la partie TestLobby :
+{'Alice': <player.Player object at 0x0000016455E39160>, 'Bob': <player.Player object at 0x0000016455D57390>}
+
+"""
