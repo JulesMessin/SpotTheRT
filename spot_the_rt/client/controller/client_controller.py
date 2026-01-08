@@ -64,25 +64,87 @@ class ClientController:
                     return
 
                 if "-host" in parts:
-                    self.join_waiting_room(username=self.view.username_field.text(),
-                                           room_name=room_name,
-                                           is_host=True)
+                    create_index = parts.index("-host") + 1
+                    host_response = parts[create_index]
+                    if host_response == "CREATE_ACK":
+                        self.join_waiting_room(username=self.view.username_field.text(),
+                                               room_name=room_name,
+                                               is_host=True)
+                    elif host_response == "CREATE_FAIL":
+                        self.back_to_start_view(error_message="Erreur : le nom de la room est déjà pris.", 
+                                                username=self.view.username_field.text(), 
+                                                room_name=room_name)
+                        
                     print("host")
                     self.current_room = room_name
 
                 elif "-join" in parts:
-                    self.join_waiting_room(username=self.view.username_field.text(),
-                                           room_name=room_name,
-                                           is_host=False)
-                    current_room = room_name
+                    join_index = parts.index("-join") + 1
+                    join_response = parts[join_index]
+                    if join_response == "JOIN_ACK":
+                        self.join_waiting_room(username=self.view.username_field.text(),
+                                               room_name=room_name,
+                                               is_host=False)
+                    elif join_response == "JOIN_FAIL_PSEUDO":
+                        self.back_to_start_view(error_message="Erreur : le pseudo est déjà pris dans cette room.", 
+                                                username=self.view.username_field.text(),
+                                                room_name=room_name)
+                    elif join_response == "JOIN_FAIL_LOBBY_FULL":
+                        self.back_to_start_view(error_message="Erreur : la room est pleine.", 
+                                                username=self.view.username_field.text(),
+                                                room_name=room_name)
+                    elif join_response == "JOIN_FAIL_NO_LOBBY":
+                        self.back_to_start_view(error_message="Erreur : la room n'existe pas.", 
+                                                username=self.view.username_field.text(),
+                                                room_name=room_name)
                     print("join")
                     self.current_room = room_name
 
                 elif "-launch" in parts:
-                    self.show_game_room(username=self.view.username_field.text(),
-                                           room_name=room_name)
+                    launch_index = parts.index("-launch") + 1
+                    launch_response = parts[launch_index]
+                    if launch_response == "LAUNCH_ACK":
+                        self.show_game_room(username=self.view.username_field.text(),
+                                            room_name=room_name, 
+                                            nb_round=self.view.nb_rounds_field.value(), 
+                                            player_point=self.view.player_points_field.value())
+                    elif launch_response == "LAUNCH_FAIL_NOT_ENOUGH_PLAYER":
+                        self.back_to_waiting_room(error_message="Erreur : pas assez de joueurs pour lancer la partie.", 
+                                                 username=self.view.username_field.text(),
+                                                 room_name=room_name)
+                    elif launch_response == "LAUNCH_FAIL_NOT_HOST":
+                        self.back_to_waiting_room(error_message="Erreur : seul l'hôte peut lancer la partie.", 
+                                                 username=self.view.username_field.text(),
+                                                 room_name=room_name)
+                    elif launch_response == "LAUNCH_FAIL_NO_LOBBY":
+                        self.back_to_waiting_room(error_message="Erreur : la room n'existe pas.", 
+                                                 username=self.view.username_field.text(),
+                                                 room_name=room_name)
+                    elif launch_response == "LAUNCH_FAIL_NO_PLAYER":
+                        self.back_to_waiting_room(error_message="Erreur : vous n'êtes pas dans cette room.", 
+                                                 username=self.view.username_field.text(),
+                                                 room_name=room_name)
                     print("launch")
                     self.current_room = room_name
+
+                elif "-verify" in parts:
+                    verify_index = parts.index("-verify") + 1
+                    verify_response = parts[verify_index]
+
+                    if verify_response == "SYMBOL_ACK":
+                        message = "Bravo ! Symbole correct."
+                    elif verify_response == "SYMBOL_FAIL":
+                        message = "Dommage ! Symbole incorrect."
+                    elif verify_response == "SYMBOL_FAIL_NO_PLAYER":
+                        message = "Erreur : vous n'êtes pas dans cette room."
+                    elif verify_response == "SYMBOL_FAIL_NO_LOBBY":
+                        message = "Erreur : la room n'existe pas."
+
+                    self.show_game_room(username=self.view.username_field.text(),
+                                        room_name=room_name,
+                                        nb_round=self.view.nb_rounds_field.value(),
+                                        player_point=self.view.player_points_field.value(), 
+                                        message=message)
 
                 elif "-chat" in parts:
                     chat_index = parts.index("-chat") + 1
@@ -107,6 +169,15 @@ class ClientController:
             self.model.connected = False
 
     ###
+    def back_to_start_view(self, username, room_name, error_message):
+        # Ajouter la logique pour revenir à la vue de démarrage
+        pass
+
+    def back_to_waiting_room(self, username, room_name, error_message):
+        # Ajouter la logique pour revenir à la salle d'attente
+        pass
+
+    ###
     def join_waiting_room(self, username, room_name, is_host):
         from view.waiting_room_view import WaitingRoom  
         self.view.waiting_room_view = WaitingRoom(username, room_name, is_host)
@@ -127,12 +198,12 @@ class ClientController:
         print("envoyé 2")
 
 
-    def show_game_room(self, username, room_name):
+    def show_game_room(self, username, room_name, nb_round, player_point, message):
         print("envoyé 3")
         from view.game_view import GameView
-        self.view.game_view = GameView(username, room_name)
+        self.view.game_view = GameView(username, room_name, nb_round, player_point)
 
-        self.send_message(f"server -room {room_name} -lauch")
+        self.send_message(f"server -room {room_name} -launch")
 
         self.view.game_view.set_controller(self)
 
