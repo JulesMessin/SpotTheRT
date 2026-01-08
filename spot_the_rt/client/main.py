@@ -1,28 +1,14 @@
-from view.interface_client import InterfaceClient
-import socket
 import sys
-
-def main():
-
-    socket_client_TCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    adresseIP_serveur = "localhost"
-    port_serveur = 55305
-
-    socket_client_TCP.connect((adresseIP_serveur, port_serveur))
-
-    message = "test"
-    socket_client_TCP.send(message.encode('utf-8'))
-
-    response = socket_client_TCP.recv(1024)
-    print("Réponse server : test:", response.decode('utf-8'))
-
-    socket_client_TCP.close()
-
-    app = QApplication(sys.argv)
-    fenetre = InterfaceClient()
-    fenetre.show()
-    sys.exit(app.exec_())
-
+from PyQt5.QtWidgets import QApplication
+from model.client_model import ClientModel
+from controller.client_controller import ClientController
+from view.login_view import LoginView
 
 if __name__ == "__main__":
-    main()
+    app = QApplication(sys.argv)
+    model = ClientModel()
+    view = LoginView()
+    controller = ClientController(model,view)
+    view.set_controller(controller)
+    view.show()
+    sys.exit(app.exec_())

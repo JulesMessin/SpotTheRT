@@ -19,69 +19,77 @@ class ServerController:
             thread.start()
             self.view.display_connection(client_address, client_username)
 
+            
+
     def handle_message(self, client_address, client_username, message):
-        self.view.display_message(client_address, client_username ,message)
-        new_message = ""
+
+        #self.view.display_message_test(message) #pour tester
+
+        thread = next((c for c in self.clients if c.client_address == client_address), None)
+        if not thread:
+            return
+
+        parts = message.split()
+        if len(parts) == 0:
+            return
         # commande
-        if message.startswith("void"):
-            parts = message.split()
-            if len(parts) == 0:
-                return
-
-            sender = parts[0]
-
-            if "-setbackground" in parts:
-                try:
-                    color_index = parts.index("-setbackground") + 1
-                    color = parts[color_index]
-                    new_message = f"void -setbackground {color}"
-                except IndexError:
-                    new_message = "Erreur : couleur manquante"
-
-
-            if "-all" in parts:
-                for thread in self.clients:
-                    thread.client_socket.send(new_message.encode("utf-8"))
-                return
-            else:
-                for thread in self.clients:
-                        if thread.client_address == client_address:
-                            new_message = new_message.encode('utf-8')
-                            thread.client_socket.send(new_message)
-                            break
         
-        elif message.startswith("game"):
-            parts = message.split()
-            if len(parts) == 0:
+        if parts[0] == "server" and "-room" in parts:
+            try:
+                room_index = parts.index("-room") + 1
+                room_name = parts[room_index]
+            except IndexError:
+                print("Erreur : nom de room manquant")
                 return
 
-            sender = parts[0]
+            if "-host" in parts:
+                thread.room_name = room_name
+                #spot_the_RT_game.create_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+                new_message = f"client -room {room_name} -host"
+                self.view.display_room_create(client_address, client_username, room_name)
 
-            if "-create" in parts:
-                    spot_the_RT_game.create_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+                for thread in self.clients:
+                    if thread.client_address == client_address:
+                        new_message = new_message.encode('utf-8')
+                        thread.client_socket.send(new_message)
 
             elif "-join" in parts:
-                    spot_the_RT_game.join_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+                thread.room_name = room_name
+                #spot_the_RT_game.create_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+                new_message = f"client -room {room_name} -join"
+                self.view.display_room_join(client_address, client_username, room_name)
+
+                for thread in self.clients:
+                    if thread.client_address == client_address:
+                        new_message = new_message.encode('utf-8')
+                        thread.client_socket.send(new_message)
+
+            elif "-leave" in parts:
+                #spot_the_RT_game.create_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+                new_message = f"client -room {room_name} -leave"
+                self.view.display_room_leave(client_address, client_username, room_name)
+
+                for thread in self.clients:
+                    if thread.client_address == client_address:
+                        new_message = new_message.encode('utf-8')
+                        thread.client_socket.send(new_message)
 
             elif "-launch" in parts:
-                   spot_the_RT_game.launch_game_request(lobby_name_input=request[1])
+                #spot_the_RT_game.create_lobby_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+                new_message = f"client -room {room_name} -launch"
+                self.view.display_room_launch(client_address, client_username, room_name)
 
-            elif "-quit" in parts:
-                    spot_the_RT_game.quit_game_request(lobby_name_input=request[1], player_pseudo_input=request[2])
+                for thread in self.clients:
+                    if thread.room_name == room_name:
+                        thread.client_socket.send(f"client -room {room_name} -launch".encode('utf-8'))
 
-            elif "-check" in parts:
-                    spot_the_RT_game.is_symbol_correct_request(lobby_name_input=request[1], player_pseudo_input=request[2], symbol_input=request[3])
-                          
-
-        
-        # message
-        else:
-            new_message = f"{client_username} : {message}"
-            new_message = new_message.encode('utf-8')
-            for thread in self.clients:
-                    thread.client_socket.send(new_message)
-
-        self.view.display_message(client_address, client_username, new_message)
+            elif "-chat" in parts:
+                chat_index = parts.index("-chat") + 1
+                chat_message = " ".join(parts[chat_index:])
+                for thread in self.clients:
+                    if thread.room_name == room_name: 
+                        thread.client_socket.send(f"client -room {room_name} -chat {client_username} : {chat_message}".encode("utf-8"))
+                self.view.display_message(client_address, client_username, room_name, chat_message)
 
 
     def client_disconnected(self, client_address, client_username):

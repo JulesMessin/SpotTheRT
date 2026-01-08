@@ -8,6 +8,7 @@ class ClientThread(Thread):
         self.client_address = client_address
         self.controller = controller
         self.client_username = client_username
+        self.room_name = None
 
     def run(self):
         print(f"Connexion : {self.client_address}")
