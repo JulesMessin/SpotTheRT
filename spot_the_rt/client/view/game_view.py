@@ -12,9 +12,9 @@ class GameView(QMainWindow):
         self.room_name = room_name
         self.controller = None
 
-        self.setup_ui2()
+        self.setup_ui_bkiou()
 
-    def setup_ui(self):
+    def setup_ui_fane(self):
         self.setWindowTitle(f"Jeu - {self.room_name}")
         self.setGeometry(200, 200, 600, 400)
 
@@ -39,7 +39,7 @@ class GameView(QMainWindow):
         self.quit_button = QPushButton("Quitter la partie")
         layout.addWidget(self.quit_button)
     
-    def setup_ui2(self):
+    def setup_ui_bkiou(self):
         self.setWindowTitle("Spot the RT - EN JEU")
         self.resize(850, 650) 
 

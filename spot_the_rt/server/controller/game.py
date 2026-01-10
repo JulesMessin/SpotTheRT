@@ -1,5 +1,5 @@
-from player import Player
-from dobbledeck import Dobbledeck
+from controller.player import Player
+from controller.dobbledeck import Dobbledeck
 
 
 class Game():

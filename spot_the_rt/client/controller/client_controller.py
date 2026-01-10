@@ -135,10 +135,6 @@ class ClientController:
                         message = "Bravo ! Symbole correct."
                     elif verify_response == "SYMBOL_FAIL":
                         message = "Dommage ! Symbole incorrect."
-                    elif verify_response == "SYMBOL_FAIL_NO_PLAYER":
-                        message = "Erreur : vous n'êtes pas dans cette room."
-                    elif verify_response == "SYMBOL_FAIL_NO_LOBBY":
-                        message = "Erreur : la room n'existe pas."
 
                     self.show_game_room(username=self.view.username_field.text(),
                                         room_name=room_name,

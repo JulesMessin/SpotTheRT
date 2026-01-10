@@ -1,6 +1,6 @@
 from urllib import request
 from model.client_thread import ClientThread
-from game_controller import GameController
+from controller.game_controller import GameController
 
 class ServerController:
     def __init__(self, server_socket, view):
