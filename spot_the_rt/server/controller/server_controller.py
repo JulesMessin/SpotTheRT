@@ -83,7 +83,11 @@ class ServerController:
                     nb_round = parts[nb_round_index]
                     reply = self.game_controller.launch_game_request(lobby_name_input=room_name, player_pseudo_input=client_username, nb_round_input=nb_round)
                     new_message = f"client -room {room_name} -launch {reply}"
-                    self.view.display_room_launch(client_address, client_username, room_name)
+                    if reply == "LAUNCH_ACK" :
+                        self.view.display_room_launch(client_address, client_username, room_name)
+                    else:
+                        self.view.display_room_launch_error(client_address, client_username, room_name)
+
 
                 except IndexError:
                     new_message = f"client -room {room_name} -launch LAUNCH_FAIL_NO_ROUND"

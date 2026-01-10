@@ -1,6 +1,9 @@
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QLabel, 
                              QPushButton, QListWidget, QMessageBox)
 from PyQt5.QtCore import Qt, QTimer, QTime
+from PyQt5.QtWidgets import QSpinBox
+from PyQt5.QtWidgets import QMessageBox
+
 
 
 class WaitingRoom(QMainWindow):
@@ -82,6 +85,27 @@ class WaitingRoom(QMainWindow):
 
         # Boutons
         if self.is_host:
+            self.rounds_label = QLabel("NOMBRE DE ROUNDS :")
+            self.rounds_label.setAlignment(Qt.AlignCenter)
+            layout.addWidget(self.rounds_label)
+
+            self.rounds_spinbox = QSpinBox()
+            self.rounds_spinbox.setMinimum(1)
+            self.rounds_spinbox.setMaximum(20)
+            self.rounds_spinbox.setValue(5)
+            self.rounds_spinbox.setAlignment(Qt.AlignCenter)
+            self.rounds_spinbox.setStyleSheet("""
+                QSpinBox {
+                    background-color: #254758;
+                    color: white;
+                    border: 2px solid #00d4ff;
+                    font-weight: bold;
+                    height: 35px;
+                }
+            """)
+            layout.addWidget(self.rounds_spinbox)
+
+
             self.start_button = QPushButton('LANCER LA PARTIE')
             self.start_button.setStyleSheet("background-color: #006400; border-color: #00ff00;")
             layout.addWidget(self.start_button)
@@ -98,12 +122,12 @@ class WaitingRoom(QMainWindow):
         self.start_button.clicked.connect(lambda: self.controller.launch_game(self.room_name))
         self.start_button.clicked.connect(lambda: print("envoyé"))
     """
-    
+
     def set_controller(self, controller):
         self.controller = controller
         self.quit_button.clicked.connect(lambda: self.controller.leave_waiting_room(self.room_name))
         if self.is_host:
-            self.start_button.clicked.connect(lambda: self.controller.launch_game(self.room_name))
+            self.start_button.clicked.connect(self.on_launch_clicked)
 
     def update_timer(self):
         self.__temps = self.__temps.addSecs(1)
@@ -115,4 +139,6 @@ class WaitingRoom(QMainWindow):
         self.players_list.addItems(new_players)
 
 
-       
+    def on_launch_clicked(self):
+        nb_round = self.rounds_spinbox.value()
+        self.controller.launch_game(self.room_name, nb_round)

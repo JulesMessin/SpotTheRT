@@ -38,7 +38,7 @@ class GameController:
                 if not player_pseudo_input in selected_game._get_connected_player().keys():
                     # Ajouter le joueur à la partie
                     selected_game.add_player_to_lobby(new_player_name=player_pseudo_input, new_player_status=False)
-                    return "JOIN_ACK", selected_game._get_connected_player().keys()
+                    return "JOIN_ACK" #, selected_game._get_connected_player().keys()
                 else:
                     # Pseudo déjà pris
                     return "JOIN_FAIL_PSEUDO"
@@ -65,7 +65,7 @@ class GameController:
                     if len(selected_game._get_connected_player()) >= 2:
                         # Lancer la partie
                         selected_game._set_nb_round(new_nb_round=nb_round_input)
-                        return "LAUNCH_ACK", selected_game._get_game_deck()._get_list_cards()
+                        return "LAUNCH_ACK" #, selected_game._get_game_deck()._get_list_cards()
                     else:
                         # Lobby pas assez rempli
                         return "LAUNCH_FAIL_NOT_ENOUGH_PLAYER"

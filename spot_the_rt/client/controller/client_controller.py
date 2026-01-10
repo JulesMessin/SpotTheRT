@@ -1,4 +1,5 @@
 from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtWidgets import QMessageBox
 import socket
 
 class ReceiveThread(QThread):
@@ -50,7 +51,9 @@ class ClientController:
             raise e
 
 
+
     def handle_message(self, message):
+            print(message)
             parts = message.split()
 
             if not parts:
@@ -103,6 +106,10 @@ class ClientController:
                 elif "-launch" in parts:
                     launch_index = parts.index("-launch") + 1
                     launch_response = parts[launch_index]
+
+                    print(launch_response)
+                    
+
                     if launch_response == "LAUNCH_ACK":
                         self.show_game_room(username=self.view.username_field.text(),
                                             room_name=room_name, 
@@ -157,6 +164,7 @@ class ClientController:
                 self.model.client_socket.send(message.encode("utf-8"))
             except Exception as e:
                 raise e
+        print("message")
 
     ###
     def disconnect(self):
@@ -170,8 +178,13 @@ class ClientController:
         pass
 
     def back_to_waiting_room(self, username, room_name, error_message):
-        # Ajouter la logique pour revenir à la salle d'attente
-        pass
+        QMessageBox.critical(
+        None,
+        "Erreur",
+        error_message,
+        QMessageBox.Ok
+        )
+        print("error launch", error_message)
 
     ###
     def join_waiting_room(self, username, room_name, is_host):
@@ -189,17 +202,15 @@ class ClientController:
         self.view.show()
 
 
-    def launch_game(self, room_name):
-        self.send_message(f"server -room {room_name} -launch")
+    def launch_game(self, room_name, nb_round):
+        self.send_message(f"server -room {room_name} -launch {nb_round}")
         print("envoyé 2")
 
 
-    def show_game_room(self, username, room_name, nb_round, player_point, message):
+    def show_game_room(self, username, room_name, nb_round, player_point, message=None):
         print("envoyé 3")
         from view.game_view import GameView
         self.view.game_view = GameView(username, room_name, nb_round, player_point)
-
-        self.send_message(f"server -room {room_name} -launch")
 
         self.view.game_view.set_controller(self)
 
