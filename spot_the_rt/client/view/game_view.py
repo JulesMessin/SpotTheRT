@@ -6,7 +6,7 @@ from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt, QSize
 
 class GameView(QMainWindow):
-    def __init__(self, username, room_name):
+    def __init__(self, username, room_name, nb_round, player_point):
         super().__init__()
         self.username = username
         self.room_name = room_name

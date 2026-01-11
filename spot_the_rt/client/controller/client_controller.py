@@ -33,6 +33,9 @@ class ClientController:
         self.view = view
         self.receive_thread = None
         self.current_room = None
+        self.nb_round = None
+        self.player_point = None
+
 
     def connect_to_server(self, ip, port, message_callback, status_callback, username):
         try:
@@ -111,10 +114,12 @@ class ClientController:
                     
 
                     if launch_response == "LAUNCH_ACK":
-                        self.show_game_room(username=self.view.username_field.text(),
-                                            room_name=room_name, 
-                                            nb_round=self.view.nb_rounds_field.value(), 
-                                            player_point=self.view.player_points_field.value())
+                        self.show_game_room(
+                            username=self.view.username_field.text(),
+                            room_name=room_name,
+                            nb_round=self.nb_round,
+                            player_point=self.player_point
+                        )
                     elif launch_response == "LAUNCH_FAIL_NOT_ENOUGH_PLAYER":
                         self.back_to_waiting_room(error_message="Erreur : pas assez de joueurs pour lancer la partie.", 
                                                  username=self.view.username_field.text(),
