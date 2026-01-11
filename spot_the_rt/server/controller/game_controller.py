@@ -12,6 +12,15 @@ class GameController:
     def _get_dict_game(self) -> dict:
         return self.__dict_game
 
+    
+
+    def get_player_card_index(self, player_name):
+        for room_name, game in self._get_dict_game().items():
+            players = game._get_connected_player()
+            if player_name in players:
+                return players[player_name]._get_id_affected_card()
+        return None
+
     def create_lobby_request(self, lobby_name_input:str, player_pseudo_input:str):
 
         # Verifier si le nom du lobby n'existe pas déjà

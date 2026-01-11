@@ -4,6 +4,8 @@ from PyQt5.QtWidgets import (
 
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt, QSize
+import os
+
 
 class GameView(QMainWindow):
     def __init__(self, username, room_name, nb_round, player_point, cible_cards, player_cards):
@@ -121,7 +123,7 @@ class GameView(QMainWindow):
 
         self.grid_cible = QGridLayout()
         self.liste_btn_cible = [] 
-        self._generer_grille_3x3(self.grid_cible, self.liste_btn_cible, est_joueur=False)
+        self._generate_3x3_grid(self.grid_cible, self.liste_btn_cible, is_player=False)
         
         # On met la grille dans un conteneur pour essayer de lui donner une forme
         container_cible = QWidget()
@@ -143,7 +145,7 @@ class GameView(QMainWindow):
 
         self.grid_joueur = QGridLayout()
         self.liste_btn_joueur = [] 
-        self._generer_grille_3x3(self.grid_joueur, self.liste_btn_joueur, est_joueur=True)
+        self._generate_3x3_grid(self.grid_joueur, self.liste_btn_joueur, is_player=True)
 
         container_joueur = QWidget()
         container_joueur.setObjectName("ConteneurCarte") 
@@ -176,34 +178,31 @@ class GameView(QMainWindow):
         self.main_layout.addWidget(self.quit_button)
 
 
-    def _generer_grille_3x3(self, grille, liste_stockage, est_joueur):
-
-        btn_index = 0 # 
-        
+    def _generate_3x3_grid(self, grid_layout, button_list, is_player):
+        button_index = 0 
 
         for row in range(3):
             for col in range(3):
 
                 if row == 1 and col == 1:
                     continue
-                
 
                 btn = QPushButton()
- 
-                btn.setFixedSize(75, 75) 
+                btn.setFixedSize(75, 75)
                 btn.setIconSize(QSize(55, 55))
-                
-                if est_joueur:
 
-                    btn.clicked.connect(lambda checked, idx=btn_index: self.clic_carte_joueur(idx))
+                if is_player:
+                    local_idx = button_index
+                    btn.clicked.connect(lambda checked, idx=local_idx: self.controller.player_card_clicked(idx))
                 else:
-                    btn.setEnabled(False) 
+                    btn.setEnabled(False)
                     btn.setStyleSheet("background-color: #ddd; border: 2px solid #555; margin: 5px;")
 
+                grid_layout.addWidget(btn, row, col)
+                button_list.append(btn)
 
-                grille.addWidget(btn, row, col)
-                liste_stockage.append(btn)
-                btn_index += 1
+                button_index += 1
+
 
    
     def update_score_round(self, score, num_round):
@@ -239,28 +238,6 @@ class GameView(QMainWindow):
         self.chat_area.append(message)
 
 
-    def load_new_cards(self, cible_cards, player_cards):
-        self.update_images(cible_cards, player_cards)
-
-
-    def clic_carte_joueur(self, index_bouton):
-        clicked_path = self.liste_paths_joueur[index_bouton]
-
-        clicked_symbol = clicked_path.split("/")[-1].replace(".png", "")
-        if clicked_symbol in [p.split("/")[-1].replace(".png","") for p in self.liste_paths_cible]:
-            if self.controller:
-                self.controller.send_message(f"server -room {self.room_name} -verify {clicked_symbol}")
-        else:
-            print("Mauvaise image !")
-
-
-
-    def load_new_player_card(self, player_card_paths):
-        self.liste_paths_joueur = player_card_paths
-        for i, path in enumerate(player_card_paths):
-            if i < len(self.liste_btn_joueur):
-                self.liste_btn_joueur[i].setIcon(QIcon(path))
-
     def update_common_card(self, paths):
         for i, path in enumerate(paths):
             if i < len(self.liste_btn_cible):
@@ -272,4 +249,3 @@ class GameView(QMainWindow):
             if i < len(self.liste_btn_joueur):
                 self.liste_btn_joueur[i].setIcon(QIcon(path))
         self.liste_paths_joueur = paths
-

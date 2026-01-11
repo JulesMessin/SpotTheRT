@@ -146,17 +146,22 @@ class ClientController:
                     print("launch")
                     self.current_room = room_name
 
-                if "-commoncard" in parts:
+                elif "-commoncard" in parts:
                     idx = parts.index("-commoncard") + 1
-                    common_card_symbols = parts[idx:]
-                    self.common_card_paths = [f"data/images/{sym}.png" for sym in common_card_symbols]
-                    self.update_common_card(self.common_card_paths)
+                    symbols = parts[idx:]
+                    self.common_card_paths = [f"data/images/{sym}.png" for sym in symbols]
+
+                    if hasattr(self.view, "game_view") and self.view.game_view:
+                        self.view.game_view.update_common_card(self.common_card_paths)
 
                 elif "-playercard" in parts:
                     idx = parts.index("-playercard") + 1
-                    player_card_symbols = parts[idx:]
-                    self.player_card_paths = [f"data/images/{sym}.png" for sym in player_card_symbols]
-                    self.update_player_card(self.player_card_paths)
+                    symbols = parts[idx:]
+                    self.player_card_paths = [f"data/images/{sym}.png" for sym in symbols]
+
+                    if hasattr(self.view, "game_view") and self.view.game_view:
+                        self.view.game_view.update_player_card(self.player_card_paths)
+
 
                 elif "-chat" in parts:
                     chat_index = parts.index("-chat") + 1
@@ -179,12 +184,12 @@ class ClientController:
                         cible_cards = data[3].split(",")
                         player_cards = data[4].split(",")
 
-                        self.view.player_point = player_point
-                        self.view.nb_round = nb_round
-                        self.view.liste_paths_cible = cible_cards
-                        self.view.liste_paths_joueur = player_cards
-                        self.view.load_new_cards(cible_cards, player_cards)
-                        self.view.update_score_round(player_point, nb_round)
+                        self.view.game_view.player_point = player_point
+                        self.view.game_view.nb_round = nb_round
+                        self.view.game_view.liste_paths_cible = cible_cards
+                        self.view.game_view.liste_paths_joueur = player_cards
+                        self.view.game_view.update_images(cible_cards, player_cards)
+                        self.view.game_view.update_score_round(player_point, nb_round)
 
                     elif verify_response == "SYMBOL_FAIL":
                         print("Mauvais symbole sélectionné !")
@@ -242,18 +247,26 @@ class ClientController:
 
 
     def show_game_room(self, username, room_name, nb_round, player_point, message=None):
-
-        cible_cards, player_cards = self.generate_cards()
-
-
         print("la game se lance")
         from view.game_view import GameView
-        self.view.game_view = GameView(username, room_name, nb_round, player_point, cible_cards, player_cards)
+
+        self.view.game_view = GameView(
+            username=username,
+            room_name=room_name,
+            nb_round=nb_round,
+            player_point=player_point,
+            cible_cards=[],
+            player_cards=[]
+        )
 
         self.view.game_view.set_controller(self)
 
-        self.view.waiting_room_view.hide()
+        if hasattr(self.view, "waiting_room_view"):
+            self.view.waiting_room_view.hide()
+
         self.view.game_view.show()
+
+
 
 
     def load_images(self):
@@ -270,40 +283,12 @@ class ClientController:
         ]
         return images
 
-    
-    def generate_cards(self):
-        cible_cards = random.sample(self.images, 8)
-        player_cards = random.sample(self.images, 8)
-        return cible_cards, player_cards
-
-    import random, os
-
-    import random, os
-
-    def generate_dobble_cards(self, nb_symbols=8):
-
-        if len(self.images) < nb_symbols + 1:
-            raise ValueError("Pas assez d'images pour générer les cartes Dobble")
-
-        common_img = random.choice(self.images)
-
-        other_imgs = random.sample([img for img in self.images if img != common_img], nb_symbols*2)
-
-        card1_imgs = [common_img] + other_imgs[:nb_symbols-1]
-        card2_imgs = [common_img] + other_imgs[nb_symbols-1:nb_symbols*2-1]
-
-        random.shuffle(card1_imgs)
-        random.shuffle(card2_imgs)
-
-        return card1_imgs, card2_imgs
-
-
 
     def verify_symbol(self, symbol_name):
-        message = f"server -room {self.room_name} -verify {symbol_name}"
-        print(message)
-        self.send_message(message)
-
+        if self.current_room:
+            msg = f"server -room {self.current_room} -verify {symbol_name}"
+            print("Vérification envoyée :", msg)
+            self.send_message(msg)
 
     def update_common_card(self, card_paths):
         self.common_card_paths = card_paths
@@ -314,3 +299,13 @@ class ClientController:
         self.player_card_paths = card_paths
         if hasattr(self.view, "game_view") and self.view.game_view:
             self.view.game_view.update_player_card(card_paths)
+
+
+    def player_card_clicked(self, index):
+        clicked_path = self.player_card_paths[index]
+        clicked_symbol = os.path.basename(clicked_path).replace(".png", "")
+
+        if clicked_symbol in [os.path.basename(p).replace(".png","") for p in self.common_card_paths]:
+            self.verify_symbol(clicked_symbol)
+        else:
+            print("Mauvaise image !")
