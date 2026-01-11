@@ -8,13 +8,18 @@ import random
 
 class ReceiveThread(QThread):
     message_received = pyqtSignal(str)
-
     def __init__(self, client_socket):
+        """
+        Initialise le thread de réception avec le socket client
+        """
         super().__init__()
         self.client_socket = client_socket
         self.running = True
 
     def run(self):
+        """
+        Écoute en continu les messages reçus depuis le serveur
+        """
         while self.running:
             try:
                 data = self.client_socket.recv(1024)
@@ -27,12 +32,18 @@ class ReceiveThread(QThread):
                 break
 
     def stop(self):
+        """
+        Arrête le thread et ferme le socket
+        """
         self.running = False
         self.client_socket.close()
 
 
 class ClientController:
     def __init__(self, model, view):
+        """
+        Initialise le contrôleur client
+        """
         self.model = model
         self.view = view
         self.receive_thread = None
@@ -45,6 +56,9 @@ class ClientController:
 
 
     def connect_to_server(self, ip, port, message_callback, status_callback, username):
+        """
+        Connecte le client au serveur TCP
+        """
         try:
             self.model.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.model.client_socket.connect((ip, port))
@@ -63,126 +77,132 @@ class ClientController:
 
 
     def handle_message(self, message):
-            print(message)
-            parts = message.split()
+        """
+        Analyse et traite les messages reçus du serveur
+        """
+        print(message)
+        parts = message.split()
 
-            if not parts:
+        if not parts:
+            return
+
+        if parts[0] == "client" and "-room" in parts:
+            try:
+                room_index = parts.index("-room") + 1
+                room_name = parts[room_index]
+            except IndexError:
                 return
 
-            if parts[0] == "client" and "-room" in parts:
-                try:
-                    room_index = parts.index("-room") + 1
-                    room_name = parts[room_index]
-                except IndexError:
-                    return
-
-                if "-host" in parts:
-                    create_index = parts.index("-host") + 1
-                    host_response = parts[create_index]
-                    if host_response == "CREATE_ACK":
-                        self.join_waiting_room(username=self.view.username_field.text(),
-                                               room_name=room_name,
-                                               is_host=True)
-                    elif host_response == "CREATE_FAIL":
-                        self.back_to_start_view(error_message="Erreur : le nom de la room est déjà pris.", 
-                                                username=self.view.username_field.text(), 
-                                                room_name=room_name)
-                        
-                    print("host")
-                    self.current_room = room_name
-
-                elif "-join" in parts:
-                    join_index = parts.index("-join") + 1
-                    join_response = parts[join_index]
-                    if join_response == "JOIN_ACK":
-                        self.join_waiting_room(username=self.view.username_field.text(),
-                                               room_name=room_name,
-                                               is_host=False)
-                    elif join_response == "JOIN_FAIL_PSEUDO":
-                        self.back_to_start_view(error_message="Erreur : le pseudo est déjà pris dans cette room.", 
-                                                username=self.view.username_field.text(),
-                                                room_name=room_name)
-                    elif join_response == "JOIN_FAIL_LOBBY_FULL":
-                        self.back_to_start_view(error_message="Erreur : la room est pleine.", 
-                                                username=self.view.username_field.text(),
-                                                room_name=room_name)
-                    elif join_response == "JOIN_FAIL_NO_LOBBY":
-                        self.back_to_start_view(error_message="Erreur : la room n'existe pas.", 
-                                                username=self.view.username_field.text(),
-                                                room_name=room_name)
-                    print("join")
-                    self.current_room = room_name
-
-                elif "-launch" in parts:
-                    launch_index = parts.index("-launch") + 1
-                    launch_response = parts[launch_index]
-
-                    print(launch_response)
+            if "-host" in parts:
+                create_index = parts.index("-host") + 1
+                host_response = parts[create_index]
+                if host_response == "CREATE_ACK":
+                    self.join_waiting_room(username=self.view.username_field.text(),
+                                            room_name=room_name,
+                                            is_host=True)
+                elif host_response == "CREATE_FAIL":
+                    self.back_to_start_view(error_message="Erreur : le nom de la room est déjà pris.", 
+                                            username=self.view.username_field.text(), 
+                                            room_name=room_name)
                     
+                print("host")
+                self.current_room = room_name
 
-                    if launch_response == "LAUNCH_ACK":
-                        self.show_game_room(
-                            username=self.view.username_field.text(),
-                            room_name=room_name,
-                            nb_round=self.nb_round,
-                            player_point=self.player_point
-                        )
-                    elif launch_response == "LAUNCH_FAIL_NOT_ENOUGH_PLAYER":
-                        self.back_to_waiting_room(error_message="Erreur : pas assez de joueurs pour lancer la partie.", 
-                                                 username=self.view.username_field.text(),
-                                                 room_name=room_name)
-                    elif launch_response == "LAUNCH_FAIL_NOT_HOST":
-                        self.back_to_waiting_room(error_message="Erreur : seul l'hôte peut lancer la partie.", 
-                                                 username=self.view.username_field.text(),
-                                                 room_name=room_name)
-                    elif launch_response == "LAUNCH_FAIL_NO_LOBBY":
-                        self.back_to_waiting_room(error_message="Erreur : la room n'existe pas.", 
-                                                 username=self.view.username_field.text(),
-                                                 room_name=room_name)
-                    elif launch_response == "LAUNCH_FAIL_NO_PLAYER":
-                        self.back_to_waiting_room(error_message="Erreur : vous n'êtes pas dans cette room.", 
-                                                 username=self.view.username_field.text(),
-                                                 room_name=room_name)
-                    print("launch")
-                    self.current_room = room_name
+            elif "-join" in parts:
+                join_index = parts.index("-join") + 1
+                join_response = parts[join_index]
+                if join_response == "JOIN_ACK":
+                    self.join_waiting_room(username=self.view.username_field.text(),
+                                            room_name=room_name,
+                                            is_host=False)
+                elif join_response == "JOIN_FAIL_PSEUDO":
+                    self.back_to_start_view(error_message="Erreur : le pseudo est déjà pris dans cette room.", 
+                                            username=self.view.username_field.text(),
+                                            room_name=room_name)
+                elif join_response == "JOIN_FAIL_LOBBY_FULL":
+                    self.back_to_start_view(error_message="Erreur : la room est pleine.", 
+                                            username=self.view.username_field.text(),
+                                            room_name=room_name)
+                elif join_response == "JOIN_FAIL_NO_LOBBY":
+                    self.back_to_start_view(error_message="Erreur : la room n'existe pas.", 
+                                            username=self.view.username_field.text(),
+                                            room_name=room_name)
+                print("join")
+                self.current_room = room_name
 
-                elif "-commoncard" in parts:
-                    idx = parts.index("-commoncard") + 1
-                    symbols = parts[idx:]
-                    self.common_card_paths = [f"data/images/{sym}.png" for sym in symbols]
-                    if hasattr(self.view, "game_view") and self.view.game_view:
-                        self.view.game_view.update_common_card(self.common_card_paths)
+            elif "-launch" in parts:
+                launch_index = parts.index("-launch") + 1
+                launch_response = parts[launch_index]
 
-                elif "-playercard" in parts:
-                    idx = parts.index("-playercard") + 1
-                    symbols = [s for s in parts[idx:] if s]
-                    self.player_card_paths = [f"data/images/{sym}.png" for sym in symbols]
-                    if hasattr(self.view, "game_view") and self.view.game_view:
-                        self.view.game_view.update_player_card(self.player_card_paths)
-
-                elif "-chat" in parts:
-                    chat_index = parts.index("-chat") + 1
-                    chat_message = " ".join(parts[chat_index:])
-                    print("message : ",chat_message)
-                    if hasattr(self, "current_room") and self.current_room == room_name:
-                        if hasattr(self.view, "game_view") and self.view.game_view:
-                            self.view.game_view.display_message(chat_message)
+                print(launch_response)
                 
-                elif "-verify" in parts:
-                    verify_index = parts.index("-verify") + 1
-                    verify_response = parts[verify_index]
 
-                    print("Réponse vérification :", verify_response)
+                if launch_response == "LAUNCH_ACK":
+                    self.show_game_room(
+                        username=self.view.username_field.text(),
+                        room_name=room_name,
+                        nb_round=self.nb_round,
+                        player_point=self.player_point
+                    )
+                elif launch_response == "LAUNCH_FAIL_NOT_ENOUGH_PLAYER":
+                    self.back_to_waiting_room(error_message="Erreur : pas assez de joueurs pour lancer la partie.", 
+                                                username=self.view.username_field.text(),
+                                                room_name=room_name)
+                elif launch_response == "LAUNCH_FAIL_NOT_HOST":
+                    self.back_to_waiting_room(error_message="Erreur : seul l'hôte peut lancer la partie.", 
+                                                username=self.view.username_field.text(),
+                                                room_name=room_name)
+                elif launch_response == "LAUNCH_FAIL_NO_LOBBY":
+                    self.back_to_waiting_room(error_message="Erreur : la room n'existe pas.", 
+                                                username=self.view.username_field.text(),
+                                                room_name=room_name)
+                elif launch_response == "LAUNCH_FAIL_NO_PLAYER":
+                    self.back_to_waiting_room(error_message="Erreur : vous n'êtes pas dans cette room.", 
+                                                username=self.view.username_field.text(),
+                                                room_name=room_name)
+                print("launch")
+                self.current_room = room_name
 
-                    if verify_response.startswith("SYMBOL_ACK"):
-                        data = verify_response.split("|")
-                        player_point = int(data[1])
-                        nb_round = int(data[2])
+            elif "-commoncard" in parts:
+                idx = parts.index("-commoncard") + 1
+                symbols = parts[idx:]
+                self.common_card_paths = [f"data/images/{sym}.png" for sym in symbols]
+                if hasattr(self.view, "game_view") and self.view.game_view:
+                    self.view.game_view.update_common_card(self.common_card_paths)
 
-                        if hasattr(self.view, "game_view") and self.view.game_view:
-                            self.view.game_view.update_score_round(player_point, nb_round)
-    ###
+            elif "-playercard" in parts:
+                idx = parts.index("-playercard") + 1
+                symbols = [s for s in parts[idx:] if s]
+                self.player_card_paths = [f"data/images/{sym}.png" for sym in symbols]
+                if hasattr(self.view, "game_view") and self.view.game_view:
+                    self.view.game_view.update_player_card(self.player_card_paths)
+
+            elif "-chat" in parts:
+                chat_index = parts.index("-chat") + 1
+                chat_message = " ".join(parts[chat_index:])
+                print("message : ",chat_message)
+                if hasattr(self, "current_room") and self.current_room == room_name:
+                    if hasattr(self.view, "game_view") and self.view.game_view:
+                        self.view.game_view.display_message(chat_message)
+            
+            elif "-verify" in parts:
+                verify_index = parts.index("-verify") + 1
+                verify_response = parts[verify_index]
+
+                print("Réponse vérification :", verify_response)
+
+                if verify_response.startswith("SYMBOL_ACK"):
+                    data = verify_response.split("|")
+                    player_point = int(data[1])
+                    nb_round = int(data[2])
+
+                    if hasattr(self.view, "game_view") and self.view.game_view:
+                        self.view.game_view.update_score_round(player_point, nb_round)
+###
     def send_message(self, message):
+        """
+        Envoie un message au serveur
+        """
         if self.model.connected:
             try:
                 self.model.client_socket.send(message.encode("utf-8"))
@@ -192,26 +212,33 @@ class ClientController:
 
     ###
     def disconnect(self):
+        """
+        Déconnecte proprement le client
+        """
         if self.receive_thread:
             self.receive_thread.stop()
             self.model.connected = False
 
     ###
     def back_to_start_view(self, username, room_name, error_message):
+        """
+        Retourne à la vue de départ en cas d’erreur
+        """
         #a faire
         pass
 
     def back_to_waiting_room(self, username, room_name, error_message):
-        QMessageBox.critical(
-        None,
-        "Erreur",
-        error_message,
-        QMessageBox.Ok
-        )
+        """
+        Affiche une erreur lors du lancement de la partie
+        """
+        QMessageBox.critical(None,"Erreur",error_message,QMessageBox.Ok)
         print("error launch", error_message)
 
     ###
     def join_waiting_room(self, username, room_name, is_host):
+        """
+        Affiche la salle d’attente après connexion à une room
+        """
         print("je rejoins une room")
         from view.waiting_room_view import WaitingRoom  
         self.view.waiting_room_view = WaitingRoom(username, room_name, is_host)
@@ -222,6 +249,9 @@ class ClientController:
         self.view.hide()
 
     def leave_waiting_room(self, room_name):
+        """
+        Quitte la salle d’attente et informe le serveur
+        """
         print("je quitte la room")
         self.send_message(f"server -room {room_name} -leave")
         self.view.waiting_room_view.hide()
@@ -229,11 +259,17 @@ class ClientController:
 
 
     def launch_game(self, room_name, nb_round):
+        """
+        Demande au serveur de lancer la partie
+        """
         self.send_message(f"server -room {room_name} -launch {nb_round}")
         print("envoyé du launch")
 
 
     def show_game_room(self, username, room_name, nb_round, player_point, message=None):
+        """
+        Affiche la fenêtre de jeu
+        """
         print("la game se lance")
         from view.game_view import GameView
 
@@ -257,6 +293,9 @@ class ClientController:
 
 
     def load_images(self):
+        """
+        Charge les images disponibles du jeu
+        """
         image_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "..", "data", "images")
         image_dir = os.path.normpath(image_dir)
 
@@ -269,18 +308,27 @@ class ClientController:
 
 
     def verify_symbol(self, symbol_name):
+        """
+        Envoie au serveur le symbole sélectionné
+        """
         if self.current_room:
             msg = f"server -room {self.current_room} -verify {symbol_name}"
             print("Vérification envoyée :", msg)
             self.send_message(msg)
 
     def update_common_card(self, card_paths):
+        """
+        Met à jour l’affichage de la carte commune
+        """
         self.common_card_paths = card_paths
         if hasattr(self.view, "game_view") and self.view.game_view:
             self.view.game_view.update_common_card(card_paths)
         self.repaint()
 
     def update_player_card(self, card_paths):
+        """
+        Met à jour l’affichage de la carte du joueur
+        """
         self.player_card_paths = card_paths
         if hasattr(self.view, "game_view") and self.view.game_view:
             self.view.game_view.update_player_card(card_paths)
@@ -288,6 +336,9 @@ class ClientController:
 
 
     def player_card_clicked(self, index):
+        """
+        Gère le clic sur une carte joueur
+        """
         clicked_path = self.player_card_paths[index]
         clicked_symbol = os.path.basename(clicked_path).replace(".png", "")
 
