@@ -129,29 +129,21 @@ class ServerController:
                         symbol_input=symbol
                     )
 
+                    game = self.game_controller._get_dict_game()[room_name]
+                    common_card = game._get_game_deck()._get_card(0)
+
                     if isinstance(reply, tuple) and reply[0] == "SYMBOL_ACK":
-                        # Extraction des infos
                         list_cards, player_point, nb_round = reply[1], reply[2], reply[3]
-
-                        # Message à envoyer seulement au joueur pour confirmation
-                        player_card_index = self.game_controller.get_player_card_index(client_username)
-                        common_card_str = ",".join(list_cards[0])
-                        player_card_str = ",".join(list_cards[player_card_index])
-                        new_message = f"client -room {room_name} -verify SYMBOL_ACK|{player_point}|{nb_round}|{common_card_str}|{player_card_str}"
-
-                        # --- NOUVEAU : envoyer les cartes mises à jour à tous les joueurs ---
-                        game = self.game_controller._get_dict_game()[room_name]
-                        common_card = game._get_game_deck()._get_card(0)
+                        new_message = f"client -room {room_name} -verify SYMBOL_ACK|{player_point}|{nb_round}"
 
                         for player_name, player_obj in game._get_connected_player().items():
                             id_card = player_obj._get_id_affected_card()
                             player_card = game._get_game_deck()._get_card(id_card)
 
-                            msg_common = f"client -room {room_name} -commoncard {' '.join(common_card)}"
-                            msg_player = f"client -room {room_name} -playercard {' '.join(player_card)}"
-
                             for t in self.clients:
                                 if t.room_name == room_name and t.client_username == player_name:
+                                    msg_common = f"client -room {room_name} -commoncard {' '.join(common_card)}"
+                                    msg_player = f"client -room {room_name} -playercard {' '.join(player_card)}"
                                     t.client_socket.send(msg_common.encode('utf-8'))
                                     t.client_socket.send(msg_player.encode('utf-8'))
 
@@ -159,23 +151,27 @@ class ServerController:
                         winner_name, winner_point = reply[1], reply[2]
                         new_message = f"client -room {room_name} -verify GAME_OVER|{winner_name}|{winner_point}"
                     else:
+
                         new_message = f"client -room {room_name} -verify {reply}"
 
-                    # Affichage côté serveur
-                    self.view.display_symbol_verification(client_address, client_username, room_name,
-                                                        symbol, reply[0] if isinstance(reply, tuple) else reply)
+                    for t in self.clients:
+                        if t.client_address == client_address:
+                            t.client_socket.send(new_message.encode('utf-8'))
+
+                    self.view.display_symbol_verification(
+                        client_address, client_username, room_name,
+                        symbol, reply[0] if isinstance(reply, tuple) else reply
+                    )
 
                 except IndexError:
                     new_message = f"client -room {room_name} -verify VERIFY_FAIL_NO_SYMBOL"
-                    self.view.display_symbol_verification_error_arg(client_address, client_username,
-                                                                    room_name, "None", "VERIFY_FAIL_NO_SYMBOL")
+                    self.view.display_symbol_verification_error_arg(
+                        client_address, client_username, room_name, "None", "VERIFY_FAIL_NO_SYMBOL"
+                    )
 
-                # Envoi du message de confirmation seulement au joueur qui a cliqué
-                for t in self.clients:
-                    if t.client_address == client_address:
-                        t.client_socket.send(new_message.encode('utf-8'))
-
-
+                    for t in self.clients:
+                        if t.client_address == client_address:
+                            t.client_socket.send(new_message.encode('utf-8'))
 
             elif "-chat" in parts:
                 chat_index = parts.index("-chat") + 1
@@ -184,7 +180,6 @@ class ServerController:
                     if thread.room_name == room_name: 
                         thread.client_socket.send(f"client -room {room_name} -chat {client_username} : {chat_message}".encode("utf-8"))
                 self.view.display_message(client_address, client_username, room_name, chat_message)
-
 
 
     def client_disconnected(self, client_address, client_username):

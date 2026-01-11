@@ -8,7 +8,7 @@ import os
 
 
 class GameView(QMainWindow):
-    def __init__(self, username, room_name, nb_round, player_point, cible_cards, player_cards):
+    def __init__(self, username, room_name, nb_round, player_point, cible_cards=None, player_cards=None):
         super().__init__()
         self.username = username
         self.room_name = room_name
@@ -208,16 +208,6 @@ class GameView(QMainWindow):
     def update_score_round(self, score, num_round):
         self.label_score.setText(f"SCORE : {score} PTS")
         self.label_round.setText(f"ROUND : {num_round}")
-
-    def update_images(self, noms_img_cible, noms_img_joueur):
-        for i, path in enumerate(noms_img_cible):
-            if i < len(self.liste_btn_cible):
-                self.liste_btn_cible[i].setIcon(QIcon(path))
-
-        for i, path in enumerate(noms_img_joueur):
-            if i < len(self.liste_btn_joueur):
-                self.liste_btn_joueur[i].setIcon(QIcon(path))
-
 
     def set_controller(self, controller):
         self.controller = controller

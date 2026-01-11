@@ -150,18 +150,15 @@ class ClientController:
                     idx = parts.index("-commoncard") + 1
                     symbols = parts[idx:]
                     self.common_card_paths = [f"data/images/{sym}.png" for sym in symbols]
-
                     if hasattr(self.view, "game_view") and self.view.game_view:
                         self.view.game_view.update_common_card(self.common_card_paths)
 
                 elif "-playercard" in parts:
                     idx = parts.index("-playercard") + 1
-                    symbols = parts[idx:]
+                    symbols = [s for s in parts[idx:] if s]
                     self.player_card_paths = [f"data/images/{sym}.png" for sym in symbols]
-
                     if hasattr(self.view, "game_view") and self.view.game_view:
                         self.view.game_view.update_player_card(self.player_card_paths)
-
 
                 elif "-chat" in parts:
                     chat_index = parts.index("-chat") + 1
@@ -181,19 +178,19 @@ class ClientController:
                         data = verify_response.split("|")
                         player_point = int(data[1])
                         nb_round = int(data[2])
-                        cible_cards = data[3].split(",")
-                        player_cards = data[4].split(",")
 
-                        self.view.game_view.player_point = player_point
-                        self.view.game_view.nb_round = nb_round
-                        self.view.game_view.liste_paths_cible = cible_cards
-                        self.view.game_view.liste_paths_joueur = player_cards
-                        self.view.game_view.update_images(cible_cards, player_cards)
-                        self.view.game_view.update_score_round(player_point, nb_round)
+             
+                        if hasattr(self.view, "game_view") and self.view.game_view:
+                            self.view.game_view.update_score_round(player_point, nb_round)
 
-                    elif verify_response == "SYMBOL_FAIL":
-                        print("Mauvais symbole sélectionné !")
-
+                    elif verify_response.startswith("GAME_OVER"):
+                        data = verify_response.split("|")
+                        winner_name = data[1]
+                        winner_point = data[2]
+                        if hasattr(self.view, "game_view") and self.view.game_view:
+ 
+                            QMessageBox.information(None, "Fin de la partie",
+                                                    f"Le joueur {winner_name} a gagné avec {winner_point} points !")
 
     ###
     def send_message(self, message):
@@ -294,11 +291,13 @@ class ClientController:
         self.common_card_paths = card_paths
         if hasattr(self.view, "game_view") and self.view.game_view:
             self.view.game_view.update_common_card(card_paths)
+        self.repaint()
 
     def update_player_card(self, card_paths):
         self.player_card_paths = card_paths
         if hasattr(self.view, "game_view") and self.view.game_view:
             self.view.game_view.update_player_card(card_paths)
+        self.repaint()
 
 
     def player_card_clicked(self, index):
