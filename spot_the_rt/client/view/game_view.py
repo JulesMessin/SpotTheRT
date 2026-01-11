@@ -245,13 +245,31 @@ class GameView(QMainWindow):
 
     def clic_carte_joueur(self, index_bouton):
         clicked_path = self.liste_paths_joueur[index_bouton]
-        if clicked_path in self.liste_paths_cible:
-            print("Bonne image !")
+
+        clicked_symbol = clicked_path.split("/")[-1].replace(".png", "")
+        if clicked_symbol in [p.split("/")[-1].replace(".png","") for p in self.liste_paths_cible]:
             if self.controller:
-                cible_cards, player_cards = self.controller.generate_dobble_cards()
-                self.liste_paths_cible = cible_cards
-                self.liste_paths_joueur = player_cards
-                self.load_new_cards(cible_cards, player_cards)
+                self.controller.send_message(f"server -room {self.room_name} -verify {clicked_symbol}")
         else:
             print("Mauvaise image !")
+
+
+
+    def load_new_player_card(self, player_card_paths):
+        self.liste_paths_joueur = player_card_paths
+        for i, path in enumerate(player_card_paths):
+            if i < len(self.liste_btn_joueur):
+                self.liste_btn_joueur[i].setIcon(QIcon(path))
+
+    def update_common_card(self, paths):
+        for i, path in enumerate(paths):
+            if i < len(self.liste_btn_cible):
+                self.liste_btn_cible[i].setIcon(QIcon(path))
+        self.liste_paths_cible = paths
+
+    def update_player_card(self, paths):
+        for i, path in enumerate(paths):
+            if i < len(self.liste_btn_joueur):
+                self.liste_btn_joueur[i].setIcon(QIcon(path))
+        self.liste_paths_joueur = paths
 

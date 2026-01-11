@@ -85,6 +85,22 @@ class ServerController:
                     new_message = f"client -room {room_name} -launch {reply}"
                     if reply == "LAUNCH_ACK" :
                         self.view.display_room_launch(client_address, client_username, room_name)
+
+                        game = self.game_controller._get_dict_game()[room_name]
+                        common_card = game._get_game_deck()._get_card(0)
+
+                        for player_name, player_obj in game._get_connected_player().items():
+                            id_card = player_obj._get_id_affected_card()
+                            player_card = game._get_game_deck()._get_card(id_card)
+
+                            msg_common = f"client -room {room_name} -commoncard {' '.join(common_card)}"
+                            msg_player = f"client -room {room_name} -playercard {' '.join(player_card)}"
+
+                            for t in self.clients:
+                                if t.client_username  == player_name and t.room_name == room_name:
+                                    t.client_socket.send(msg_common.encode('utf-8'))
+                                    t.client_socket.send(msg_player.encode('utf-8'))
+
                     else:
                         self.view.display_room_launch_error(client_address, client_username, room_name)
 
@@ -103,9 +119,27 @@ class ServerController:
                 try:
                     symbol_index = parts.index("-verify") + 1
                     symbol = parts[symbol_index]
-                    reply = self.game_controller.is_symbol_correct_request(lobby_name_input=room_name, player_pseudo_input=client_username, symbol_input=symbol)
-                    new_message = f"client -room {room_name} -verify {reply}"
-                    self.view.display_symbol_verification(client_address, client_username, room_name, symbol, reply[0])
+
+                    reply = self.game_controller.is_symbol_correct_request(
+                        lobby_name_input=room_name,
+                        player_pseudo_input=client_username,
+                        symbol_input=symbol
+                    )
+
+                    if isinstance(reply, tuple):
+                        if reply[0] == "SYMBOL_ACK":
+                            list_cards, player_point, nb_round = reply[1], reply[2], reply[3]
+                            common_card_str = ",".join(list_cards[0])
+                            player_card_index = self.game_controller.get_player_card_index(client_username)
+                            player_card_str = ",".join(list_cards[player_card_index])
+                            new_message = f"client -room {room_name} -verify SYMBOL_ACK|{player_point}|{nb_round}|{common_card_str}|{player_card_str}"
+                        elif reply[0] == "GAME_OVER":
+                            winner_name, winner_point = reply[1], reply[2]
+                            new_message = f"client -room {room_name} -verify GAME_OVER|{winner_name}|{winner_point}"
+                    else:
+                        new_message = f"client -room {room_name} -verify {reply}"
+
+                    self.view.display_symbol_verification(client_address, client_username, room_name, symbol, reply[0] if isinstance(reply, tuple) else reply)
 
                 except IndexError:
                     new_message = f"client -room {room_name} -verify VERIFY_FAIL_NO_SYMBOL"
@@ -115,6 +149,7 @@ class ServerController:
                     if thread.client_address == client_address:
                         thread.client_socket.send(new_message.encode('utf-8'))
 
+
             elif "-chat" in parts:
                 chat_index = parts.index("-chat") + 1
                 chat_message = " ".join(parts[chat_index:])
@@ -122,6 +157,7 @@ class ServerController:
                     if thread.room_name == room_name: 
                         thread.client_socket.send(f"client -room {room_name} -chat {client_username} : {chat_message}".encode("utf-8"))
                 self.view.display_message(client_address, client_username, room_name, chat_message)
+
 
 
     def client_disconnected(self, client_address, client_username):

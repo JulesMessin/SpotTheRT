@@ -40,6 +40,7 @@ class ClientController:
         self.nb_round = None
         self.player_point = None
         self.images = self.load_images()
+        self.username = None
 
 
 
@@ -145,20 +146,17 @@ class ClientController:
                     print("launch")
                     self.current_room = room_name
 
-                elif "-verify" in parts:
-                    verify_index = parts.index("-verify") + 1
-                    verify_response = parts[verify_index]
+                if "-commoncard" in parts:
+                    idx = parts.index("-commoncard") + 1
+                    common_card_symbols = parts[idx:]
+                    self.common_card_paths = [f"data/images/{sym}.png" for sym in common_card_symbols]
+                    self.update_common_card(self.common_card_paths)
 
-                    if verify_response == "SYMBOL_ACK":
-                        message = "Bravo ! Symbole correct."
-                    elif verify_response == "SYMBOL_FAIL":
-                        message = "Dommage ! Symbole incorrect."
-
-                    self.show_game_room(username=self.view.username_field.text(),
-                                        room_name=room_name,
-                                        nb_round=self.view.nb_rounds_field.value(),
-                                        player_point=self.view.player_points_field.value(), 
-                                        message=message)
+                elif "-playercard" in parts:
+                    idx = parts.index("-playercard") + 1
+                    player_card_symbols = parts[idx:]
+                    self.player_card_paths = [f"data/images/{sym}.png" for sym in player_card_symbols]
+                    self.update_player_card(self.player_card_paths)
 
                 elif "-chat" in parts:
                     chat_index = parts.index("-chat") + 1
@@ -167,6 +165,30 @@ class ClientController:
                     if hasattr(self, "current_room") and self.current_room == room_name:
                         if hasattr(self.view, "game_view") and self.view.game_view:
                             self.view.game_view.display_message(chat_message)
+                
+                elif "-verify" in parts:
+                    verify_index = parts.index("-verify") + 1
+                    verify_response = parts[verify_index]
+
+                    print("Réponse vérification :", verify_response)
+
+                    if verify_response.startswith("SYMBOL_ACK"):
+                        data = verify_response.split("|")
+                        player_point = int(data[1])
+                        nb_round = int(data[2])
+                        cible_cards = data[3].split(",")
+                        player_cards = data[4].split(",")
+
+                        self.view.player_point = player_point
+                        self.view.nb_round = nb_round
+                        self.view.liste_paths_cible = cible_cards
+                        self.view.liste_paths_joueur = player_cards
+                        self.view.load_new_cards(cible_cards, player_cards)
+                        self.view.update_score_round(player_point, nb_round)
+
+                    elif verify_response == "SYMBOL_FAIL":
+                        print("Mauvais symbole sélectionné !")
+
 
     ###
     def send_message(self, message):
@@ -185,7 +207,6 @@ class ClientController:
 
     ###
     def back_to_start_view(self, username, room_name, error_message):
-        # Ajouter la logique pour revenir à la vue de démarrage
         pass
 
     def back_to_waiting_room(self, username, room_name, error_message):
@@ -277,3 +298,19 @@ class ClientController:
         return card1_imgs, card2_imgs
 
 
+
+    def verify_symbol(self, symbol_name):
+        message = f"server -room {self.room_name} -verify {symbol_name}"
+        print(message)
+        self.send_message(message)
+
+
+    def update_common_card(self, card_paths):
+        self.common_card_paths = card_paths
+        if hasattr(self.view, "game_view") and self.view.game_view:
+            self.view.game_view.update_common_card(card_paths)
+
+    def update_player_card(self, card_paths):
+        self.player_card_paths = card_paths
+        if hasattr(self.view, "game_view") and self.view.game_view:
+            self.view.game_view.update_player_card(card_paths)
