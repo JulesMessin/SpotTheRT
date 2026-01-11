@@ -6,13 +6,23 @@ from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import Qt, QSize
 
 class GameView(QMainWindow):
-    def __init__(self, username, room_name, nb_round, player_point):
+    def __init__(self, username, room_name, nb_round, player_point, cible_cards, player_cards):
         super().__init__()
         self.username = username
         self.room_name = room_name
         self.controller = None
 
+        self.nb_round = nb_round
+        self.player_point = player_point
+
+        self.cible_cards = cible_cards
+        self.player_cards = player_cards
+
         self.setup_ui_bkiou()
+        self.update_images(self.cible_cards, self.player_cards)
+
+        self.liste_paths_cible = cible_cards
+        self.liste_paths_joueur = player_cards
 
     def setup_ui_fane(self):
         self.setWindowTitle(f"Jeu - {self.room_name}")
@@ -201,18 +211,13 @@ class GameView(QMainWindow):
         self.label_round.setText(f"ROUND : {num_round}")
 
     def update_images(self, noms_img_cible, noms_img_joueur):
-        for i, nom in enumerate(noms_img_cible):
+        for i, path in enumerate(noms_img_cible):
             if i < len(self.liste_btn_cible):
-                self.liste_btn_cible[i].setIcon(QIcon(nom)) 
-        
-        for i, nom in enumerate(noms_img_joueur):
+                self.liste_btn_cible[i].setIcon(QIcon(path))
+
+        for i, path in enumerate(noms_img_joueur):
             if i < len(self.liste_btn_joueur):
-                self.liste_btn_joueur[i].setIcon(QIcon(nom))
-
-    def clic_carte_joueur(self, index_bouton):
-        print(f"Bouton {index_bouton} cliqué !") 
-
-
+                self.liste_btn_joueur[i].setIcon(QIcon(path))
 
 
     def set_controller(self, controller):
@@ -232,3 +237,21 @@ class GameView(QMainWindow):
 
     def display_message(self, message):
         self.chat_area.append(message)
+
+
+    def load_new_cards(self, cible_cards, player_cards):
+        self.update_images(cible_cards, player_cards)
+
+
+    def clic_carte_joueur(self, index_bouton):
+        clicked_path = self.liste_paths_joueur[index_bouton]
+        if clicked_path in self.liste_paths_cible:
+            print("Bonne image !")
+            if self.controller:
+                cible_cards, player_cards = self.controller.generate_dobble_cards()
+                self.liste_paths_cible = cible_cards
+                self.liste_paths_joueur = player_cards
+                self.load_new_cards(cible_cards, player_cards)
+        else:
+            print("Mauvaise image !")
+

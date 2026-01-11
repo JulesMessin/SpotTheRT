@@ -2,6 +2,10 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
 import socket
 
+import os
+import random
+
+
 class ReceiveThread(QThread):
     message_received = pyqtSignal(str)
 
@@ -35,6 +39,8 @@ class ClientController:
         self.current_room = None
         self.nb_round = None
         self.player_point = None
+        self.images = self.load_images()
+
 
 
     def connect_to_server(self, ip, port, message_callback, status_callback, username):
@@ -193,6 +199,7 @@ class ClientController:
 
     ###
     def join_waiting_room(self, username, room_name, is_host):
+        print("je rejoins une room")
         from view.waiting_room_view import WaitingRoom  
         self.view.waiting_room_view = WaitingRoom(username, room_name, is_host)
 
@@ -202,6 +209,7 @@ class ClientController:
         self.view.hide()
 
     def leave_waiting_room(self, room_name):
+        print("je quitte la room")
         self.send_message(f"server -room {room_name} -leave")
         self.view.waiting_room_view.hide()
         self.view.show()
@@ -209,15 +217,63 @@ class ClientController:
 
     def launch_game(self, room_name, nb_round):
         self.send_message(f"server -room {room_name} -launch {nb_round}")
-        print("envoyé 2")
+        print("envoyé du launch")
 
 
     def show_game_room(self, username, room_name, nb_round, player_point, message=None):
-        print("envoyé 3")
+
+        cible_cards, player_cards = self.generate_cards()
+
+
+        print("la game se lance")
         from view.game_view import GameView
-        self.view.game_view = GameView(username, room_name, nb_round, player_point)
+        self.view.game_view = GameView(username, room_name, nb_round, player_point, cible_cards, player_cards)
 
         self.view.game_view.set_controller(self)
 
         self.view.waiting_room_view.hide()
         self.view.game_view.show()
+
+
+    def load_images(self):
+        image_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "..", "data", "images")
+        image_dir = os.path.normpath(image_dir)
+
+        if not os.path.exists(image_dir):
+            raise FileNotFoundError(f"Le dossier d'images n'existe pas : {image_dir}")
+
+        images = [
+            os.path.join(image_dir, f)
+            for f in os.listdir(image_dir)
+            if f.lower().endswith((".png", ".jpg", ".jpeg", ".bmp"))
+        ]
+        return images
+
+    
+    def generate_cards(self):
+        cible_cards = random.sample(self.images, 8)
+        player_cards = random.sample(self.images, 8)
+        return cible_cards, player_cards
+
+    import random, os
+
+    import random, os
+
+    def generate_dobble_cards(self, nb_symbols=8):
+
+        if len(self.images) < nb_symbols + 1:
+            raise ValueError("Pas assez d'images pour générer les cartes Dobble")
+
+        common_img = random.choice(self.images)
+
+        other_imgs = random.sample([img for img in self.images if img != common_img], nb_symbols*2)
+
+        card1_imgs = [common_img] + other_imgs[:nb_symbols-1]
+        card2_imgs = [common_img] + other_imgs[nb_symbols-1:nb_symbols*2-1]
+
+        random.shuffle(card1_imgs)
+        random.shuffle(card2_imgs)
+
+        return card1_imgs, card2_imgs
+
+
