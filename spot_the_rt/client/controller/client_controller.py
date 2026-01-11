@@ -179,19 +179,8 @@ class ClientController:
                         player_point = int(data[1])
                         nb_round = int(data[2])
 
-             
                         if hasattr(self.view, "game_view") and self.view.game_view:
                             self.view.game_view.update_score_round(player_point, nb_round)
-
-                    elif verify_response.startswith("GAME_OVER"):
-                        data = verify_response.split("|")
-                        winner_name = data[1]
-                        winner_point = data[2]
-                        if hasattr(self.view, "game_view") and self.view.game_view:
- 
-                            QMessageBox.information(None, "Fin de la partie",
-                                                    f"Le joueur {winner_name} a gagné avec {winner_point} points !")
-
     ###
     def send_message(self, message):
         if self.model.connected:
@@ -209,6 +198,7 @@ class ClientController:
 
     ###
     def back_to_start_view(self, username, room_name, error_message):
+        #a faire
         pass
 
     def back_to_waiting_room(self, username, room_name, error_message):
@@ -269,9 +259,6 @@ class ClientController:
     def load_images(self):
         image_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "..", "data", "images")
         image_dir = os.path.normpath(image_dir)
-
-        if not os.path.exists(image_dir):
-            raise FileNotFoundError(f"Le dossier d'images n'existe pas : {image_dir}")
 
         images = [
             os.path.join(image_dir, f)

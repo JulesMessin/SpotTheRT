@@ -2,19 +2,30 @@ from controller.game import Game
 
 
 class GameController:
-
     def __init__(self, dict_game:dict = {}) -> None:
+        """
+        Initialise le contrôleur de jeu et le dictionnaire des parties
+        """
         self.__dict_game = dict_game
 
     def _add_game(self, lobby_name_input:str, new_game_input:object) -> None:
+        """
+        Ajoute une nouvelle partie au dictionnaire des jeux
+        """
         self.__dict_game[lobby_name_input] = new_game_input
 
     def _get_dict_game(self) -> dict:
+        """
+        Retourne le dictionnaire contenant toutes les parties actives
+        """
         return self.__dict_game
 
     
 
     def get_player_card_index(self, player_name):
+        """
+        Retourne l index de la carte associée à un joueur
+        """
         for room_name, game in self._get_dict_game().items():
             players = game._get_connected_player()
             if player_name in players:
@@ -22,6 +33,9 @@ class GameController:
         return None
 
     def create_lobby_request(self, lobby_name_input:str, player_pseudo_input:str):
+        """
+        Crée un nouveau lobby et ajoute le joueur comme host
+        """
 
         # Verifier si le nom du lobby n'existe pas déjà
         if not lobby_name_input in self._get_dict_game().keys():
@@ -35,6 +49,9 @@ class GameController:
             return "CREATE_FAIL"
             
     def join_lobby_request(self, lobby_name_input:str, player_pseudo_input:str):
+        """
+        Ajoute un joueur existant à un lobby
+        """
 
         # Verifier si le nom du lobby n'existe pas déjà
         if lobby_name_input in self._get_dict_game().keys():
@@ -59,6 +76,9 @@ class GameController:
             return "JOIN_FAIL_NO_LOBBY"
             
     def launch_game_request(self, lobby_name_input:str, player_pseudo_input:str, nb_round_input:int):
+        """
+        Lance une partie si les conditions sont réunies
+        """
 
         # Verifier si le nom du lobby n'existe pas déjà
         if lobby_name_input in self._get_dict_game().keys():
@@ -89,6 +109,9 @@ class GameController:
             return "LAUNCH_FAIL_NO_LOBBY"
 
     def quit_game_request(self, lobby_name_input:str, player_pseudo_input:str) -> None:
+        """
+        Retire un joueur d un lobby et supprime la partie si vide
+        """
         
         # Verifier si le nom du lobby n'existe pas déjà
         if lobby_name_input in self._get_dict_game().keys():
@@ -109,6 +132,9 @@ class GameController:
             return "EXIT_FAIL_NO_LOBBY"
             
     def is_symbol_correct_request(self, lobby_name_input:str, player_pseudo_input:str, symbol_input:str) -> None:
+        """
+        Vérifie si un symbole est correct et met à jour la partie
+        """
         
         # Verifier si le nom du lobby n'existe pas déjà
         if lobby_name_input in self._get_dict_game().keys():

@@ -9,11 +9,17 @@ from view.waiting_room_view import WaitingRoom
 
 class LoginView(QMainWindow):
     def __init__(self):
+        """
+        Initialise la fenêtre de connexion au serveur.
+        """
         super().__init__()
         self.controller = None
         self.setup_ui_bkiou()
 
     def setup_ui_fane(self):
+        """
+        Configure l'interface simple de connexion.
+        """
         self.setWindowTitle("Client TCP - PyQt5")
         self.setGeometry(200, 200, 600, 400)
 
@@ -40,6 +46,9 @@ class LoginView(QMainWindow):
         layout.addWidget(self.connect_button)
 
     def setup_ui_bkiou(self):
+        """
+        Configure l'interface complète avec styles pour la connexion.
+        """
         self.setWindowTitle("Spot the RT - Connexion")
         self.resize(500, 700)
 
@@ -105,10 +114,16 @@ class LoginView(QMainWindow):
 
             
     def set_controller(self, controller):
+        """
+        Associe le controller au bouton de connexion.
+        """
         self.controller = controller
         self.connect_button.clicked.connect(self.on_connect)
 
     def on_connect(self):
+        """
+        Gère la connexion au serveur et la sélection Host/Join.
+        """
         ip = self.ip_field.text()
         port = int(self.port_field.text())
         username = self.username_field.text()
@@ -138,12 +153,21 @@ class LoginView(QMainWindow):
 
     
     def display_message(self, message):
+        """
+        Affiche un message reçu du serveur.
+        """
         self.response_area.append(message)
 
     def update_status(self, status):
+        """
+        Met à jour le statut de connexion affiché.
+        """
         self.status_label.setText(status)
 
     def closeEvent(self, event):
+        """
+        Déconnecte le client avant de fermer la fenêtre.
+        """
         if self.controller:
             self.controller.disconnect()
         event.accept()
@@ -151,6 +175,9 @@ class LoginView(QMainWindow):
     ## popup host/ join
 
     def show_host_join_popup(self):
+        """
+        Affiche un popup demandant si l'utilisateur veut host ou join.
+        """
         msg = QMessageBox(self)
         msg.setWindowTitle("Salle")
         msg.setText("Souhaitez-vous host ou rejoindre une room ?")

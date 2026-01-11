@@ -9,24 +9,27 @@ import os
 
 class GameView(QMainWindow):
     def __init__(self, username, room_name, nb_round, player_point, cible_cards=None, player_cards=None):
+        """
+        Initialise la fenêtre de jeu
+        """
         super().__init__()
         self.username = username
         self.room_name = room_name
         self.controller = None
-
         self.nb_round = nb_round
         self.player_point = player_point
-
         self.cible_cards = cible_cards
         self.player_cards = player_cards
 
         self.setup_ui_bkiou()
-        self.update_images(self.cible_cards, self.player_cards)
 
         self.liste_paths_cible = cible_cards
         self.liste_paths_joueur = player_cards
 
     def setup_ui_fane(self):
+        """
+        Configure une interface simple (ancienne version/test)
+        """
         self.setWindowTitle(f"Jeu - {self.room_name}")
         self.setGeometry(200, 200, 600, 400)
 
@@ -52,6 +55,9 @@ class GameView(QMainWindow):
         layout.addWidget(self.quit_button)
     
     def setup_ui_bkiou(self):
+        """
+        Configure l'interface principale du jeu
+        """
         self.setWindowTitle("Spot the RT - EN JEU")
         self.resize(850, 650) 
 
@@ -177,16 +183,15 @@ class GameView(QMainWindow):
         self.quit_button = QPushButton("Quitter la partie")
         self.main_layout.addWidget(self.quit_button)
 
-
     def _generate_3x3_grid(self, grid_layout, button_list, is_player):
+        """
+        Génère une grille 3x3 de boutons pour les cartes
+        """
         button_index = 0 
-
         for row in range(3):
             for col in range(3):
-
-                if row == 1 and col == 1:
+                if row == 1 and col == 1:  # Ignore le centre
                     continue
-
                 btn = QPushButton()
                 btn.setFixedSize(75, 75)
                 btn.setIconSize(QSize(55, 55))
@@ -200,41 +205,52 @@ class GameView(QMainWindow):
 
                 grid_layout.addWidget(btn, row, col)
                 button_list.append(btn)
-
                 button_index += 1
 
-
-   
     def update_score_round(self, score, num_round):
+        """
+        Met à jour l'affichage du score et du round
+        """
         self.label_score.setText(f"SCORE : {score} PTS")
         self.label_round.setText(f"ROUND : {num_round}")
 
     def set_controller(self, controller):
+        """
+        Associe le contrôleur à la vue et connecte les boutons aux actions
+        """
         self.controller = controller
-
         self.send_button.clicked.connect(self.on_send)
-
         self.quit_button.clicked.connect(lambda: self.controller.leave_game(self.room_name))
 
     def on_send(self):
+        """
+        Envoie le message saisi dans le chat au serveur
+        """
         message = self.message_input.toPlainText().strip()
         if message and self.controller:
             self.controller.send_message(f"server -room {self.room_name} -chat {message}")
             self.message_input.clear()
         print("envoyé")
 
-
     def display_message(self, message):
+        """
+        Affiche un message dans la zone de chat
+        """
         self.chat_area.append(message)
 
-
     def update_common_card(self, paths):
+        """
+        Met à jour l'affichage des cartes communes (cible)
+        """
         for i, path in enumerate(paths):
             if i < len(self.liste_btn_cible):
                 self.liste_btn_cible[i].setIcon(QIcon(path))
         self.liste_paths_cible = paths
 
     def update_player_card(self, paths):
+        """
+        Met à jour l'affichage des cartes du joueur
+        """
         for i, path in enumerate(paths):
             if i < len(self.liste_btn_joueur):
                 self.liste_btn_joueur[i].setIcon(QIcon(path))

@@ -3,6 +3,9 @@ import socket
 
 class ClientThread(Thread):
     def __init__(self, client_socket, client_address, client_username, controller):
+        """
+        Initialise le thread dédié à un client connecté au serveur
+        """
         super().__init__()
         self.client_socket = client_socket
         self.client_address = client_address
@@ -11,6 +14,9 @@ class ClientThread(Thread):
         self.room_name = None
 
     def run(self):
+        """
+        Écoute les messages du client et les transmet au controller.
+        """
         print(f"Connexion : {self.client_address}")
         try:
             while True:

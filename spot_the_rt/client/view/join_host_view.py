@@ -3,12 +3,18 @@ from PyQt5.QtCore import Qt
 
 class RoomDialog(QDialog):
     def __init__(self, mode, parent=None):
+        """
+        Initialise la fenêtre de dialogue pour créer ou rejoindre une room.
+        """
         super().__init__(parent)
         self.mode = mode
         self.room_name = None
         self.setup_ui_bkiou()
 
     def setup_ui_fane(self):
+        """
+        Configure l'interface simple pour entrer le nom de la room.
+        """
         self.setWindowTitle("Nom de la room")
         self.setFixedSize(300, 150)
 
@@ -27,6 +33,9 @@ class RoomDialog(QDialog):
         self.button.clicked.connect(self.validate)
     
     def setup_ui_bkiou(self):
+        """
+        Configure l'interface complète avec styles pour le dialogue.
+        """
         self.setWindowTitle("Spot the RT - Join ou Host???")
         self.setFixedSize(350, 200)
         
@@ -65,7 +74,6 @@ class RoomDialog(QDialog):
 
         layout = QVBoxLayout(self)
 
-        # Texte dynamique selon le mode
         txt = "NOM DE LA ROOM À CRÉER" if self.mode == "host" else "NOM DE LA ROOM À REJOINDRE"
         self.label = QLabel(txt)
         self.label.setAlignment(Qt.AlignCenter)
@@ -82,6 +90,9 @@ class RoomDialog(QDialog):
         layout.addWidget(self.button)
 
     def validate(self):
+        """
+        Vérifie que le nom de la room est valide et ferme le dialogue.
+        """
         room = self.room_input.text().strip()
         if not room:
             QMessageBox.warning(self, "Erreur", "Le nom de la salle ne peut pas être vide.")

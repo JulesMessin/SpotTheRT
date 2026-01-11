@@ -8,6 +8,9 @@ from PyQt5.QtWidgets import QMessageBox
 
 class WaitingRoom(QMainWindow):
     def __init__(self, username, room_name, is_host, parent=None):
+        """
+        Initialise la salle d'attente avec les informations du joueur
+        """
         super().__init__()
         self.controller = None
         self.username = username
@@ -18,6 +21,9 @@ class WaitingRoom(QMainWindow):
         self.setup_ui_bkiou()
 
     def setup_ui_fane(self):
+        """
+        Crée l'interface utilisateur de base pour la salle d'attente
+        """
         self.setWindowTitle(f"Salle d'attente - {self.room_name}")
         self.setGeometry(250, 250, 400, 300)
 
@@ -45,6 +51,9 @@ class WaitingRoom(QMainWindow):
         layout.addWidget(self.quit_button)
 
     def setup_ui_bkiou(self):
+        """
+        Configure l'interface graphique complète et les styles pour la salle d'attente
+        """
         self.setWindowTitle(f"Spot the RT - Salle : {self.room_name}")
         self.resize(500, 700)
 
@@ -124,21 +133,32 @@ class WaitingRoom(QMainWindow):
     """
 
     def set_controller(self, controller):
+        """
+        Associe le controller aux boutons de la salle d'attente
+        """
         self.controller = controller
         self.quit_button.clicked.connect(lambda: self.controller.leave_waiting_room(self.room_name))
         if self.is_host:
             self.start_button.clicked.connect(self.on_launch_clicked)
 
     def update_timer(self):
+        """
+        Met à jour le compteur de temps d'attente affiché
+        """
         self.__temps = self.__temps.addSecs(1)
         self.__label_timer.setText(f"Temps d'attente : {self.__temps.toString('mm:ss')}")
 
     def update_player_list(self, new_players):
-        """ Appelée par le controller pour rafraîchir la liste """
+        """
+        Rafraîchit la liste des joueurs connectés à la salle.
+        """
         self.players_list.clear()
         self.players_list.addItems(new_players)
 
 
     def on_launch_clicked(self):
+        """
+        Lance la partie en récupérant le nombre de rounds choisi.
+        """
         nb_round = self.rounds_spinbox.value()
         self.controller.launch_game(self.room_name, nb_round)
